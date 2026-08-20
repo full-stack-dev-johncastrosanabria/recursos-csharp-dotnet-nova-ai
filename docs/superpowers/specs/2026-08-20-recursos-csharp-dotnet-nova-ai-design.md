@@ -290,10 +290,22 @@ false.
 and related analyser rules. With warnings-as-errors that means a freshly cloned
 repo does not build before the learner has written a line — an unacceptable
 first experience. Fix: a nested `.editorconfig` under `src/Exercises/` relaxing
-exactly those rules, scoped to that directory. Solutions, examples, tools,
-system checkpoints and the learner's own completed code all stay under the full
-ruleset. The relaxation list is short, explicit, and commented with why each
-entry is there.
+exactly four rules, each of which fires *only* because the body is a throw and
+each of which stops applying the moment the learner writes a real
+implementation:
+
+| Rule | Why it fires on a stub |
+|---|---|
+| `IDE0060` | parameter is unused because nothing consumes it yet |
+| `CA1801` | same, from the analyser package |
+| `CA1822` | member could be static, because it never touches `this` yet |
+| `CS1998` | `async` method has no `await`, because it only throws |
+
+Nothing else is relaxed. Solutions, examples, tools, system checkpoints and the
+learner's own completed code all stay under the full ruleset — so the moment an
+exercise is solved, the full bar applies to it. The nested file is commented
+with this table, which makes it a small lesson in analyser scoping rather than
+a hole in the rules.
 
 `dotnet format` enforces `.editorconfig` in CI and in a pre-commit hook. The
 hook is a plain script installed by `./tools/install-hooks.sh` — no Husky, no
@@ -356,6 +368,30 @@ step, no link drift between the two. Excluded from the site: `src/Exercises`,
 Deployed to GitHub Pages by `.github/workflows/docs.yml`. Navigation is grouped
 by the six tiers. A separate `links.yml` workflow checks external links on a
 schedule, as in the sibling repo.
+
+### 4.9 The learner's loop, built for repetition
+
+Exercises are one-shot by nature: once solved, they are solved, and a repo
+optimised only for the first pass stops being useful the week after someone
+finishes it. Three commands in `run.sh` / `run.ps1` fix that at near-zero cost:
+
+| Command | What it does |
+|---|---|
+| `./run.sh test 03` | the default loop — module 03's unit tier, seconds, no Docker |
+| `./run.sh status` | which modules are green, which are untouched, which are partly done |
+| `./run.sh reset 03` | restores module 03's stubs from git so the module can be done again |
+
+`status` matters more than it looks. Thirty modules is long enough that people
+lose their place, and a visible map of what is done is the difference between a
+path someone returns to and a repo someone abandons in tier 3.
+
+`reset` is what makes the material re-practisable. It is a `git checkout` of one
+module's `src/Exercises/` directory, refuses to run with uncommitted work
+elsewhere, and prints what it is about to discard. Someone revisiting module 03
+before an interview can redo it cold rather than reading their own past answers.
+
+Neither command is infrastructure. Both are shell over `git` and `dotnet test`,
+and both are covered by the same audit that guards everything else.
 
 ---
 
@@ -476,7 +512,11 @@ is missing or out of order.
    Judgement before syntax, without exception.
 4. **REAL-WORLD CASE** — a specific bug caused by not understanding this
    module, with what it cost. Not a parable. Names the mechanism, the symptom,
-   how long it went unnoticed, and the price.
+   how long it went unnoticed, and the price. **The failure must be
+   mechanically reproducible in the module's own `examples/`** — the reader can
+   run the bug, then run the fix. **The cost is derived, not asserted**: stated
+   as arithmetic over named assumptions (volume, rate, unit price) that the
+   reader can check and disagree with, never as a fabricated invoice. See §7.1.
 5. **Exercises** — 5–8, split Core / Challenge, each linked to its test command.
 6. **Summary**.
 7. **Review questions** — ending with the module's tell from the roadmap,
@@ -487,6 +527,35 @@ is missing or out of order.
 
 3,000–5,000 prose words. Under 3,000 means the module is incomplete: go back to
 the source and find what is missing. This is enforced, not requested.
+
+### 7.1 How a real-world case is written
+
+Two failure modes are available here and both are bad. A case with invented
+specifics — "it cost us $40,000 and took three weeks to find" — has narrative
+punch and is folklore: the reader repeats it in an interview and cannot defend
+a single number in it. A case with no cost at all is an academic footnote that
+nobody remembers by module 12.
+
+The rule, chosen because this repo is for repeated practice rather than one
+read-through:
+
+- **The mechanism is real and runnable.** Every case is reproduced by a program
+  in the module's `examples/` folder. The reader runs it, sees the wrong
+  behaviour, then runs the fixed version. A case the reader can execute is
+  practice; a case they can only read is a story.
+- **The cost is derived in front of the reader.** Not "$40,000" but "a duplicate
+  charge on the retried checkouts — at 20,000 orders/day, a 0.3% retry rate and
+  a $45 average basket, that is roughly $2,700/day before chargeback fees at
+  ~$15 each." Every input is named, and the reader is invited to substitute
+  their own company's numbers.
+- **The detection gap is part of the cost.** How long it ran before anyone
+  noticed, and what would have caught it sooner. This is where the case earns
+  its place: the fix is usually one line, and the lesson is never the fix.
+
+This has a structural payoff. Module 28 teaches unit-cost-per-request
+arithmetic; by the time the reader arrives there they have already done that
+arithmetic twenty-seven times in the real-world cases, and module 28 names the
+skill they have been practising unnamed.
 
 ---
 
@@ -589,11 +658,11 @@ Mitigation: module 01 shipped and reviewed first, a written voice section in
 Mitigation: `global.json` pins the SDK band; every guide's Resources section
 links the versioned doc; a dated "verified against" line in the README.
 
-**Real-world cases must be true.** A fabricated incident is worse than none.
-Mitigation: cases are drawn from documented, mechanically verifiable failure
-modes — the bug is reproducible in the module's own examples. Where a case is
-composed rather than recounted, it is written as an illustration, not as a war
-story with invented specifics.
+**Real-world cases must be true.** A fabricated incident is worse than none —
+the reader repeats it and cannot defend it. Mitigation: the policy in §7.1. The
+mechanism is reproducible in the module's own `examples/`, and the cost is
+arithmetic over named assumptions the reader can check, never an asserted
+figure. No invented dates, companies or invoices appear anywhere in the repo.
 
 **Docker-free proxies teaching something false.** Asserting on generated SQL is
 not the same as asserting on query results. Mitigation: every proxy exercise
