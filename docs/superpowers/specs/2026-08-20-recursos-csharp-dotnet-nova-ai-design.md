@@ -113,9 +113,20 @@ not acceptable.
 `Microsoft.EntityFrameworkCore` 10.0.11 · `Npgsql.EntityFrameworkCore.PostgreSQL`
 10.0.3 · `Microsoft.AspNetCore.Mvc.Testing` 10.0.11 ·
 `Microsoft.Extensions.Http.Resilience` 10.9.0 · `Polly` 8.7.0 ·
-`OpenTelemetry.Extensions.Hosting` 1.17.0 · `Microsoft.NET.Test.Sdk` 18.9.0 ·
-`coverlet.collector` 10.0.1 · `Respawn` 7.0.0 · `Bogus` 35.6.5 ·
+`OpenTelemetry.Extensions.Hosting` 1.17.0 · `Microsoft.Testing.Extensions.TrxReport`
+2.3.3 · `Microsoft.Testing.Extensions.CodeCoverage` 18.10.0 · `Respawn` 7.0.0 ·
+`Bogus` 35.6.5 · `Microsoft.CodeAnalysis.CSharp` 5.9.0 ·
 `Scalar.AspNetCore` 2.17.1 · `MassTransit` 8.5.4 (Apache-2.0).
+
+**`xunit.v3` 4.0.0 runs on Microsoft Testing Platform, not VSTest.** The stable
+metapackage depends on `xunit.v3.mtp-v2` 4.0.0, so test projects are executables
+(`<OutputType>Exe</OutputType>`) with `<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>`,
+and they take **neither** `Microsoft.NET.Test.Sdk` **nor** `coverlet.collector` —
+both belong to the VSTest stack this repo does not use. TRX output for the
+`stubs-are-empty` and `status` checks comes from
+`Microsoft.Testing.Extensions.TrxReport`; coverage, if added later, from
+`Microsoft.Testing.Extensions.CodeCoverage`. The xUnit getting-started page still
+shows a `4.0.0-pre.108` package in its example; 4.0.0 stable is what this repo pins.
 
 Every version is pinned in `Directory.Packages.props`. Versions not listed here
 are verified against nuget.org at the moment the module that needs them is built.
