@@ -66,5 +66,45 @@ public sealed class ModuleTemplateTests : IDisposable
         Directory.Exists(Path("src", "Solutions", "Challenge")).ShouldBeTrue();
     }
 
+    [Fact]
+    public void Refuses_to_overwrite_an_already_scaffolded_module()
+    {
+        var guidePath = Path("GUIDE.md");
+        const string sentinel = "SENTINEL: hand-authored prose that must survive a re-run.";
+        File.WriteAllText(guidePath, sentinel);
+
+        Should.Throw<ModuleTemplateException>(() =>
+            ModuleTemplate.Create(_root, "07-the-middleware-pipeline", "The middleware pipeline", 7));
+
+        // The property that matters: the author's prose is untouched, not just that it threw.
+        File.ReadAllText(guidePath).ShouldBe(sentinel);
+    }
+
+    [Fact]
+    public void Refuses_a_number_that_does_not_match_the_slugs_own_leading_digits()
+    {
+        var otherRoot = System.IO.Path.Combine(_root, "mismatch-check");
+
+        Should.Throw<ModuleTemplateException>(() =>
+            ModuleTemplate.Create(otherRoot, "07-the-middleware-pipeline", "The middleware pipeline", 3));
+    }
+
+    [Fact]
+    public void TryParseModuleNumber_parses_the_leading_two_digit_number()
+    {
+        ModuleTemplate.TryParseModuleNumber("07-the-middleware-pipeline", out var number).ShouldBeTrue();
+        number.ShouldBe(7);
+    }
+
+    [Theory]
+    [InlineData("x")]
+    [InlineData("7-x")]
+    [InlineData("7x-y")]
+    [InlineData("")]
+    public void TryParseModuleNumber_rejects_a_slug_without_two_digits_and_a_hyphen(string slug)
+    {
+        ModuleTemplate.TryParseModuleNumber(slug, out _).ShouldBeFalse();
+    }
+
     public void Dispose() => Directory.Delete(_root, recursive: true);
 }

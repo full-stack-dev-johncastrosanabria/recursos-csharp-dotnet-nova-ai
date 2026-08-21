@@ -9,12 +9,22 @@ if (args is not ["new-module", var slug, var title])
     return 2;
 }
 
-if (!int.TryParse(slug.AsSpan(0, 2), out var number))
+if (!ModuleTemplate.TryParseModuleNumber(slug, out var number))
 {
-    Console.Error.WriteLine($"Slug must start with a two-digit module number: '{slug}'");
+    Console.Error.WriteLine(
+        $"Slug must start with a two-digit module number followed by '-': '{slug}'");
     return 2;
 }
 
-ModuleTemplate.Create(Directory.GetCurrentDirectory(), slug, title, number);
+try
+{
+    ModuleTemplate.Create(Directory.GetCurrentDirectory(), slug, title, number);
+}
+catch (ModuleTemplateException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    return 2;
+}
+
 Console.WriteLine($"Created modules/{slug}");
 return 0;

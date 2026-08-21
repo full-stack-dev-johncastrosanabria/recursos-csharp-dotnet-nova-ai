@@ -1,6 +1,19 @@
+using System.Globalization;
 using Training.Audit;
 
 namespace Training.Scaffold;
+
+/// <summary>
+/// A scaffold request Create refuses to satisfy: a module directory that
+/// already exists, or a slug and module number that disagree. Both are
+/// usage errors — Create never overwrites, and never guesses.
+/// </summary>
+public sealed class ModuleTemplateException : Exception
+{
+    public ModuleTemplateException(string message) : base(message)
+    {
+    }
+}
 
 /// <summary>
 /// Generates one module's three projects plus a guide skeleton.
@@ -10,9 +23,30 @@ namespace Training.Scaffold;
 /// </summary>
 public static class ModuleTemplate
 {
+    /// <summary>
+    /// Creates modules/&lt;slug&gt;. Refuses — throwing <see cref="ModuleTemplateException"/>
+    /// rather than touching disk — when the directory already exists (GUIDE.md is where
+    /// an author's hand-written prose lives; a second run must never silently erase it) or
+    /// when <paramref name="number"/> disagrees with the slug's own leading digits.
+    /// </summary>
     public static void Create(string repoRoot, string slug, string title, int number)
     {
+        if (!TryParseModuleNumber(slug, out var slugNumber) || slugNumber != number)
+        {
+            throw new ModuleTemplateException(
+                $"slug '{slug}' does not start with module number {number:D2}.");
+        }
+
         var module = Path.Combine(repoRoot, "modules", slug);
+
+        if (Directory.Exists(module))
+        {
+            throw new ModuleTemplateException(
+                $"modules/{slug} already exists. Create never overwrites an existing "
+                + "module — GUIDE.md is where an author's prose lives. Delete the "
+                + "directory first if you mean to regenerate it.");
+        }
+
         var rootNamespace = $"Training.Module{number:D2}";
 
         foreach (var folder in (string[])["Core", "Challenge"])
@@ -32,6 +66,27 @@ public static class ModuleTemplate
         Write(Path.Combine(module, "tests", "UnitTests", "UnitTests.csproj"),
             TestProject(rootNamespace, number));
         Write(RepoLayout.GuidePath(module), Guide(title, number));
+    }
+
+    /// <summary>
+    /// Parses the two-digit module number a slug must start with (e.g. "07"
+    /// from "07-the-middleware-pipeline"). False when the slug does not start
+    /// with two digits followed by '-', so a caller can report a clean usage
+    /// error instead of slicing blindly and crashing on a short argument.
+    /// </summary>
+    public static bool TryParseModuleNumber(string slug, out int number)
+    {
+        if (slug.Length >= 3
+            && char.IsAsciiDigit(slug[0])
+            && char.IsAsciiDigit(slug[1])
+            && slug[2] == '-')
+        {
+            number = int.Parse(slug.AsSpan(0, 2), CultureInfo.InvariantCulture);
+            return true;
+        }
+
+        number = 0;
+        return false;
     }
 
     private static void Write(string path, string content)
