@@ -1,3 +1,4 @@
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Training.Audit;
@@ -5,6 +6,23 @@ namespace Training.Audit;
 public sealed record TrxTest(string ClassName, string MethodName, string Outcome, string CodeBase)
 {
     public bool Failed => string.Equals(Outcome, "Failed", StringComparison.OrdinalIgnoreCase);
+}
+
+/// <summary>
+/// A TRX path that could not be turned into results: the path named neither a
+/// file nor a directory, or a .trx file exists but could not be read/parsed.
+/// A gate that cannot read its input must never report success, so this is a
+/// usage error (exit 2 in the CLI), not a swallowed/skipped file.
+/// </summary>
+public sealed class TrxReportException : Exception
+{
+    public TrxReportException(string message) : base(message)
+    {
+    }
+
+    public TrxReportException(string message, Exception inner) : base(message, inner)
+    {
+    }
 }
 
 /// <summary>
@@ -29,21 +47,43 @@ public sealed class TrxReport
     {
         if (Directory.Exists(path))
         {
-            var merged = Directory
-                .EnumerateFiles(path, "*.trx", SearchOption.AllDirectories)
-                .OrderBy(f => f, StringComparer.Ordinal)
-                .SelectMany(file => LoadFile(file).Tests)
-                .ToList();
+            // A foreach (rather than SelectMany) so a bad file's name is
+            // known at the point of failure, not lost behind deferred LINQ.
+            var merged = new List<TrxTest>();
+            foreach (var file in Directory
+                         .EnumerateFiles(path, "*.trx", SearchOption.AllDirectories)
+                         .OrderBy(f => f, StringComparer.Ordinal))
+            {
+                merged.AddRange(LoadFile(file).Tests);
+            }
 
             return new TrxReport(merged);
         }
 
-        return LoadFile(path);
+        if (File.Exists(path))
+        {
+            return LoadFile(path);
+        }
+
+        throw new TrxReportException(
+            $"TRX path not found: '{path}'. Pass a .trx file or a directory containing .trx files.");
     }
 
     private static TrxReport LoadFile(string path)
     {
-        var document = XDocument.Load(path);
+        XDocument document;
+        try
+        {
+            document = XDocument.Load(path);
+        }
+        catch (Exception ex) when (ex is XmlException or IOException or UnauthorizedAccessException)
+        {
+            // Realistic cause: a CI process killed mid-write leaves a
+            // truncated file. Name it explicitly rather than skipping it
+            // silently - a gate that cannot read its input must not report
+            // success.
+            throw new TrxReportException($"Could not read TRX file '{path}': {ex.Message}", ex);
+        }
 
         var definitions = document.Descendants()
             .Where(e => e.Name.LocalName == "UnitTest")

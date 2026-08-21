@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Training.Audit;
 
 var repoRoot = Directory.GetCurrentDirectory();
@@ -12,7 +13,13 @@ if (command == "status")
         return 2;
     }
 
-    Console.WriteLine(StatusReporter.Render(TrxReport.Load(trxPath)));
+    if (!TryLoadTrx(trxPath, out var statusReport, out var statusError))
+    {
+        Console.Error.WriteLine(statusError);
+        return 2;
+    }
+
+    Console.WriteLine(StatusReporter.Render(statusReport));
     return 0;
 }
 
@@ -36,7 +43,13 @@ switch (command)
             return 2;
         }
 
-        findings = StubLeakChecker.Run(TrxReport.Load(trxPath));
+        if (!TryLoadTrx(trxPath, out var stubLeakReport, out var stubLeakError))
+        {
+            Console.Error.WriteLine(stubLeakError);
+            return 2;
+        }
+
+        findings = StubLeakChecker.Run(stubLeakReport);
         break;
     case "all":
         findings =
@@ -64,4 +77,23 @@ static string? ArgumentValue(string[] arguments, string name)
 {
     var index = Array.IndexOf(arguments, name);
     return index >= 0 && index + 1 < arguments.Length ? arguments[index + 1] : null;
+}
+
+// A malformed/missing TRX is a usage error (exit 2), not a crash: it must
+// name the bad path/file so a learner running `status` never sees a stack
+// trace, and a CI gate that cannot read its input must never read as clean.
+static bool TryLoadTrx(string path, [NotNullWhen(true)] out TrxReport? report, out string? error)
+{
+    try
+    {
+        report = TrxReport.Load(path);
+        error = null;
+        return true;
+    }
+    catch (TrxReportException ex)
+    {
+        report = null;
+        error = ex.Message;
+        return false;
+    }
 }
