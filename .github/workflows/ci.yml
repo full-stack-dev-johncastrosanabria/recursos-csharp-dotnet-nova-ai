@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+jobs:
+  format:
+    name: format and analysers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - run: dotnet restore
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes --no-restore
+      - name: Build with warnings as errors
+        run: dotnet build --no-restore
+
+  solvable:
+    name: every exercise is solvable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Run every module against its reference solutions
+        # This is the job that makes the repo trustworthy: it proves each
+        # published exercise can actually be solved as written.
+        run: |
+          shopt -s nullglob
+          for project in modules/*/tests/UnitTests; do
+            echo "::group::$project"
+            dotnet test --project "$project" -p:UseSolutions=true
+            echo "::endgroup::"
+          done
+
+  stubs-are-empty:
+    name: no answer left in a stub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Run against the stubs and collect reports
+        run: |
+          mkdir -p artifacts
+          shopt -s nullglob
+          for project in modules/*/tests/UnitTests; do
+            name="$(basename "$(dirname "$(dirname "$project")")")"
+            # Failure is the expected outcome here.
+            dotnet test --project "$project" \
+              --report-trx --report-trx-filename "$name.trx" \
+              --results-directory artifacts || true
+          done
+      - name: Assert every exercise test class has at least one failure
+        run: dotnet run --project tools/Training.Audit -- stub-leak --trx artifacts
+
+  audit:
+    name: repository invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Test the audit tool itself
+        run: dotnet test --project tools/Training.Audit.Tests
+      - name: Test the scaffolder
+        run: dotnet test --project tools/Training.Scaffold.Tests
+      - name: Pairs, API parity, guide anatomy and word count
+        run: dotnet run --project tools/Training.Audit -- all
+      - name: Verify the solution file has not drifted
+        run: |
+          tools/sync-solution.sh
+          git diff --exit-code training.slnx
+
+  integration:
+    name: integration tier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Run the Docker-backed tier against real PostgreSQL
+        run: |
+          shopt -s nullglob
+          projects=(modules/*/tests/IntegrationTests)
+          if [ ${#projects[@]} -eq 0 ]; then
+            echo "No integration projects yet."
+            exit 0
+          fi
+          for project in "${projects[@]}"; do
+            echo "::group::$project"
+            dotnet test --project "$project" -p:UseSolutions=true
+            echo "::endgroup::"
+          done
