@@ -18,15 +18,24 @@ usage:
 }
 
 function Get-ModulePath([string]$Number) {
-    $match = Get-ChildItem -Path 'modules' -Directory -Filter "$Number-*" | Select-Object -First 1
-    if (-not $match) { Write-Error "No module numbered $Number."; exit 1 }
-    return $match.FullName
+    if (-not (Test-Path -Path 'modules' -PathType Container)) {
+        Write-Error "No module numbered $Number."
+        exit 1
+    }
+    $candidates = @(Get-ChildItem -Path 'modules' -Directory -Filter "$Number-*")
+    if ($candidates.Count -eq 0) { Write-Error "No module numbered $Number."; exit 1 }
+    if ($candidates.Count -gt 1) {
+        $names = ($candidates | ForEach-Object { "modules/$($_.Name)" }) -join ' '
+        Write-Error "Ambiguous module number ${Number}: $names"
+        exit 1
+    }
+    return $candidates[0].FullName
 }
 
 switch ($Command) {
     'test' {
         if ($Module) { dotnet test --project (Join-Path (Get-ModulePath $Module) 'tests/UnitTests') }
-        else {
+        elseif (Test-Path -Path 'modules' -PathType Container) {
             Get-ChildItem -Path 'modules' -Directory | ForEach-Object {
                 dotnet test --project (Join-Path $_.FullName 'tests/UnitTests')
             }
@@ -35,9 +44,11 @@ switch ($Command) {
     'status' {
         New-Item -ItemType Directory -Force -Path artifacts | Out-Null
         Remove-Item artifacts/*.trx -ErrorAction SilentlyContinue
-        Get-ChildItem -Path 'modules' -Directory | ForEach-Object {
-            dotnet test --project (Join-Path $_.FullName 'tests/UnitTests') `
-                --report-trx --report-trx-filename "$($_.Name).trx" --results-directory artifacts
+        if (Test-Path -Path 'modules' -PathType Container) {
+            Get-ChildItem -Path 'modules' -Directory | ForEach-Object {
+                dotnet test --project (Join-Path $_.FullName 'tests/UnitTests') `
+                    --report-trx --report-trx-filename "$($_.Name).trx" --results-directory artifacts
+            }
         }
         dotnet run --project tools/Training.Audit -- status --trx artifacts
     }

@@ -26,6 +26,10 @@ module_path() {
     echo "No module numbered ${number}." >&2
     exit 1
   fi
+  if (( ${#matches[@]} > 1 )); then
+    echo "Ambiguous module number ${number}: ${matches[*]}" >&2
+    exit 1
+  fi
   echo "${matches[0]}"
 }
 

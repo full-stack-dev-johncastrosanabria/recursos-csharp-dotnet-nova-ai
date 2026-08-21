@@ -8,3 +8,4 @@ site/
 TestResults/
 .superpowers/
 .venv-docs/
+artifacts/
