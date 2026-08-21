@@ -41,8 +41,10 @@ public static class RepoLayout
     private static string? Counterpart(string moduleDirectory, string testFilePath, string project)
     {
         var fileName = Path.GetFileName(testFilePath);
-        if (!fileName.EndsWith(TestSuffix, StringComparison.Ordinal))
+        if (!fileName.EndsWith(TestSuffix, StringComparison.Ordinal) || fileName.Length == TestSuffix.Length)
         {
+            // A file named exactly "Tests.cs" has no base name to map across,
+            // so it is not a recognisable test file either.
             return null;
         }
 

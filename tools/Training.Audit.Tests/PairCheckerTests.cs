@@ -55,5 +55,25 @@ public sealed class PairCheckerTests : IDisposable
         PairChecker.Run(_root).ShouldBeEmpty();
     }
 
+    [Fact]
+    public void Ignores_a_file_called_exactly_Tests_cs()
+    {
+        WriteFile("modules/01-demo/tests/UnitTests/Core/Tests.cs");
+
+        PairChecker.Run(_root).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Maps_a_test_file_in_the_project_root_to_the_source_root()
+    {
+        WriteFile("modules/01-demo/tests/UnitTests/MoneyTests.cs");
+        WriteFile("modules/01-demo/src/Solutions/Money.cs");
+
+        var findings = PairChecker.Run(_root);
+
+        findings.Count.ShouldBe(1);
+        findings[0].Message.ShouldContain("src/Exercises/Money.cs");
+    }
+
     public void Dispose() => Directory.Delete(_root, recursive: true);
 }
