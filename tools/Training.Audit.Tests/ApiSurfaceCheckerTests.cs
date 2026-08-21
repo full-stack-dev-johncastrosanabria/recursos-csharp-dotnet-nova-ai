@@ -109,5 +109,91 @@ public sealed class ApiSurfaceCheckerTests : IDisposable
         ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
     }
 
+    [Fact]
+    public void Reports_a_static_modifier_difference()
+    {
+        WriteSource("Exercises", "Wallet.cs", Stub);
+        WriteSource("Solutions", "Wallet.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Wallet
+            {
+                public static decimal Balance(string currency) => 0m;
+            }
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void Reports_a_renamed_positional_record_parameter()
+    {
+        WriteSource("Exercises", "Money.cs", """
+            namespace Training.Demo.Core;
+
+            public readonly record struct Money(decimal Amount, string Currency);
+            """);
+        WriteSource("Solutions", "Money.cs", """
+            namespace Training.Demo.Core;
+
+            public readonly record struct Money(decimal Amount, string CurrencyCode);
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void Keeps_nested_types_with_the_same_name_in_separate_buckets()
+    {
+        const string content = """
+            namespace Training.Demo.Core;
+
+            public sealed class OuterA
+            {
+                public sealed class Enumerator
+                {
+                    public int Current => 1;
+                }
+            }
+
+            public sealed class OuterB
+            {
+                public sealed class Enumerator
+                {
+                    public int Current => 2;
+                }
+            }
+            """;
+
+        WriteSource("Exercises", "Outers.cs", content);
+        WriteSource("Solutions", "Outers.cs", content);
+
+        ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Ignores_a_signature_wrapped_across_lines()
+    {
+        WriteSource("Exercises", "Wallet.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Wallet
+            {
+                public decimal Balance(
+                    string currency) => throw new NotImplementedException();
+            }
+            """);
+        WriteSource("Solutions", "Wallet.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Wallet
+            {
+                public decimal Balance(string currency) => 0m;
+            }
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
+    }
+
     public void Dispose() => Directory.Delete(_root, recursive: true);
 }
