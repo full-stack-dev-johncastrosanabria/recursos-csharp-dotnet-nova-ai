@@ -8,4 +8,8 @@
   <Folder Name="/modules/00-probe/tests/">
     <Project Path="modules/00-probe/tests/UnitTests/UnitTests.csproj" />
   </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
+    <Project Path="tools/Training.Audit/Training.Audit.csproj" />
+  </Folder>
 </Solution>
