@@ -1,10 +1,12 @@
+using System.Text.RegularExpressions;
+
 namespace Training.Audit;
 
 /// <summary>
 /// The repository's path conventions, in one place. Every other check asks
 /// this class where things live rather than composing paths itself.
 /// </summary>
-public static class RepoLayout
+public static partial class RepoLayout
 {
     public const string ModulesFolder = "modules";
     public const string TestSuffix = "Tests.cs";
@@ -76,4 +78,19 @@ public static class RepoLayout
 
         return Path.Combine(moduleDirectory, "src", project, subPath, sourceName);
     }
+
+    /// <summary>
+    /// Extracts a module's directory name (e.g. "01-type-system-and-memory")
+    /// from an absolute path such as a TRX codeBase, or null when the path is
+    /// not under modules/. The stub-leak check and the status report both key
+    /// off this so the two views of a TRX run cannot drift apart.
+    /// </summary>
+    public static string? ModuleNameFromPath(string path)
+    {
+        var match = ModulePathPattern().Match(path.Replace('\\', '/'));
+        return match.Success ? match.Groups[1].Value : null;
+    }
+
+    [GeneratedRegex("/" + ModulesFolder + "/([^/]+)/")]
+    private static partial Regex ModulePathPattern();
 }
