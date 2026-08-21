@@ -7,7 +7,13 @@ IReadOnlyList<AuditFinding> findings = command switch
 {
     "pairs" => PairChecker.Run(repoRoot),
     "api" => ApiSurfaceChecker.Run(repoRoot),
-    "all" => [.. PairChecker.Run(repoRoot), .. ApiSurfaceChecker.Run(repoRoot)],
+    "guides" => GuideAnatomyChecker.Run(repoRoot),
+    "all" =>
+    [
+        .. PairChecker.Run(repoRoot),
+        .. ApiSurfaceChecker.Run(repoRoot),
+        .. GuideAnatomyChecker.Run(repoRoot),
+    ],
     _ => throw new ArgumentException($"Unknown command '{command}'."),
 };
 
