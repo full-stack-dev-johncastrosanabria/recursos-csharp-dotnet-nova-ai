@@ -18,6 +18,11 @@ dotnet_diagnostic.IDE0055.severity = error
 dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.CA2007.severity = none
 
+# Test method names are sentences by convention in every module of this repo,
+# and that convention is worth more than the identifier rule it breaks.
+[*Tests.cs]
+dotnet_diagnostic.CA1707.severity = none
+
 [*.{xml,csproj,props,targets,yml,yaml,json}]
 indent_style = space
 indent_size = 2

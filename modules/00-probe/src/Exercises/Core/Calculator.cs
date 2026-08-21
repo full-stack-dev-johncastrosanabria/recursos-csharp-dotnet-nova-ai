@@ -1,6 +1,6 @@
 namespace Training.Probe.Core;
 
-public static class Probe
+public static class Calculator
 {
-    public static int Answer() => 42;
+    public static int Answer() => throw new NotImplementedException();
 }
