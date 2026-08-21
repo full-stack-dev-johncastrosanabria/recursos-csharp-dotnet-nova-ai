@@ -17,6 +17,14 @@ public static class RepoLayout
             : [];
     }
 
+    /// <summary>modules/01-x -> modules/01-x/src/Exercises</summary>
+    public static string ExercisesDirectory(string moduleDirectory)
+        => Path.Combine(moduleDirectory, "src", "Exercises");
+
+    /// <summary>modules/01-x -> modules/01-x/src/Solutions</summary>
+    public static string SolutionsDirectory(string moduleDirectory)
+        => Path.Combine(moduleDirectory, "src", "Solutions");
+
     /// <summary>Every *Tests.cs under a module's tests/ folder.</summary>
     public static IEnumerable<string> TestFiles(string moduleDirectory)
     {

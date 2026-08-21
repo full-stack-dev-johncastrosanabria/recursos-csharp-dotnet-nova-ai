@@ -6,7 +6,8 @@ var command = args.Length > 0 ? args[0] : "all";
 IReadOnlyList<AuditFinding> findings = command switch
 {
     "pairs" => PairChecker.Run(repoRoot),
-    "all" => PairChecker.Run(repoRoot),
+    "api" => ApiSurfaceChecker.Run(repoRoot),
+    "all" => [.. PairChecker.Run(repoRoot), .. ApiSurfaceChecker.Run(repoRoot)],
     _ => throw new ArgumentException($"Unknown command '{command}'."),
 };
 
