@@ -143,32 +143,56 @@ public sealed class ApiSurfaceCheckerTests : IDisposable
     }
 
     [Fact]
-    public void Keeps_nested_types_with_the_same_name_in_separate_buckets()
+    public void Reports_drift_between_same_named_nested_types_in_different_outers()
     {
-        const string content = """
+        // Collapsing Outer.Enumerator and Outer2.Enumerator into one bare
+        // "Enumerator" bucket would flatten both projects to the same
+        // {MoveNext, Reset} set and hide the swap below. Qualifying by
+        // enclosing type keeps them separate, so the swap is visible.
+        WriteSource("Exercises", "Outers.cs", """
             namespace Training.Demo.Core;
 
-            public sealed class OuterA
+            public sealed class Outer
             {
                 public sealed class Enumerator
                 {
-                    public int Current => 1;
+                    public bool MoveNext() => false;
                 }
             }
 
-            public sealed class OuterB
+            public sealed class Outer2
             {
                 public sealed class Enumerator
                 {
-                    public int Current => 2;
+                    public void Reset() { }
                 }
             }
-            """;
+            """);
+        WriteSource("Solutions", "Outers.cs", """
+            namespace Training.Demo.Core;
 
-        WriteSource("Exercises", "Outers.cs", content);
-        WriteSource("Solutions", "Outers.cs", content);
+            public sealed class Outer
+            {
+                public sealed class Enumerator
+                {
+                    public void Reset() { }
+                }
+            }
 
-        ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
+            public sealed class Outer2
+            {
+                public sealed class Enumerator
+                {
+                    public bool MoveNext() => false;
+                }
+            }
+            """);
+
+        var findings = ApiSurfaceChecker.Run(_root);
+
+        findings.ShouldNotBeEmpty();
+        findings.ShouldContain(f => f.Message.Contains("Outer.Enumerator"));
+        findings.ShouldContain(f => f.Message.Contains("Outer2.Enumerator"));
     }
 
     [Fact]
