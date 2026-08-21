@@ -8,6 +8,7 @@ public static class RepoLayout
 {
     public const string ModulesFolder = "modules";
     public const string TestSuffix = "Tests.cs";
+    public const string GuideFileName = "GUIDE.md";
 
     public static IEnumerable<string> ModuleDirectories(string repoRoot)
     {
@@ -24,6 +25,10 @@ public static class RepoLayout
     /// <summary>modules/01-x -> modules/01-x/src/Solutions</summary>
     public static string SolutionsDirectory(string moduleDirectory)
         => Path.Combine(moduleDirectory, "src", "Solutions");
+
+    /// <summary>modules/01-x -> modules/01-x/GUIDE.md</summary>
+    public static string GuidePath(string moduleDirectory)
+        => Path.Combine(moduleDirectory, GuideFileName);
 
     /// <summary>Every *Tests.cs under a module's tests/ folder.</summary>
     public static IEnumerable<string> TestFiles(string moduleDirectory)

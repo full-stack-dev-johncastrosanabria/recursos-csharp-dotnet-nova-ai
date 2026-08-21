@@ -55,4 +55,20 @@ public sealed class GuideTextTests
 
         GuideText.SectionHeadings(markdown).ShouldBe(["First", "Second"]);
     }
+
+    [Fact]
+    public void Ignores_a_heading_looking_line_inside_a_tilde_fence()
+    {
+        var markdown = """
+            ## First
+
+            ~~~
+            ## Not a real section
+            ~~~
+
+            ## Second
+            """;
+
+        GuideText.SectionHeadings(markdown).ShouldBe(["First", "Second"]);
+    }
 }

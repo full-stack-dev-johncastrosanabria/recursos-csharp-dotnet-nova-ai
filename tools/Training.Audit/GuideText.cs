@@ -55,7 +55,8 @@ public static partial class GuideText
         {
             var trimmed = raw.TrimEnd('\r').TrimStart();
 
-            if (trimmed.StartsWith("```", StringComparison.Ordinal))
+            if (trimmed.StartsWith("```", StringComparison.Ordinal)
+                || trimmed.StartsWith("~~~", StringComparison.Ordinal))
             {
                 inFence = !inFence;
                 continue;

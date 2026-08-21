@@ -11,7 +11,7 @@ public static class GuideAnatomyChecker
     public const int MinimumWords = 3000;
     public const int MaximumWords = 5000;
 
-    public static readonly string[] RequiredSections =
+    public static readonly IReadOnlyList<string> RequiredSections =
     [
         "Before you start",
         "Objectives",
@@ -29,7 +29,7 @@ public static class GuideAnatomyChecker
 
         foreach (var module in RepoLayout.ModuleDirectories(repoRoot))
         {
-            var guidePath = Path.Combine(module, "GUIDE.md");
+            var guidePath = RepoLayout.GuidePath(module);
             var relative = Path.GetRelativePath(repoRoot, guidePath).Replace('\\', '/');
 
             if (!File.Exists(guidePath))
