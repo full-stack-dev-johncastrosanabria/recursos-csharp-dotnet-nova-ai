@@ -2,28 +2,66 @@ using Training.Audit;
 
 var repoRoot = Directory.GetCurrentDirectory();
 var command = args.Length > 0 ? args[0] : "all";
+var trxPath = ArgumentValue(args, "--trx");
 
-IReadOnlyList<AuditFinding> findings = command switch
+if (command == "status")
 {
-    "pairs" => PairChecker.Run(repoRoot),
-    "api" => ApiSurfaceChecker.Run(repoRoot),
-    "guides" => GuideAnatomyChecker.Run(repoRoot),
-    "all" =>
-    [
-        .. PairChecker.Run(repoRoot),
-        .. ApiSurfaceChecker.Run(repoRoot),
-        .. GuideAnatomyChecker.Run(repoRoot),
-    ],
-    _ => throw new ArgumentException($"Unknown command '{command}'."),
-};
+    if (trxPath is null)
+    {
+        Console.Error.WriteLine("status requires --trx <path>");
+        return 2;
+    }
+
+    Console.WriteLine(StatusReporter.Render(TrxReport.Load(trxPath)));
+    return 0;
+}
+
+IReadOnlyList<AuditFinding> findings;
+
+switch (command)
+{
+    case "pairs":
+        findings = PairChecker.Run(repoRoot);
+        break;
+    case "api":
+        findings = ApiSurfaceChecker.Run(repoRoot);
+        break;
+    case "guides":
+        findings = GuideAnatomyChecker.Run(repoRoot);
+        break;
+    case "stub-leak":
+        if (trxPath is null)
+        {
+            Console.Error.WriteLine("stub-leak requires --trx <path>");
+            return 2;
+        }
+
+        findings = StubLeakChecker.Run(TrxReport.Load(trxPath));
+        break;
+    case "all":
+        findings =
+        [
+            .. PairChecker.Run(repoRoot),
+            .. ApiSurfaceChecker.Run(repoRoot),
+            .. GuideAnatomyChecker.Run(repoRoot),
+        ];
+        break;
+    default:
+        Console.Error.WriteLine(
+            "usage: audit [all|pairs|api|guides] | audit stub-leak --trx <path> | audit status --trx <path>");
+        return 2;
+}
 
 foreach (var finding in findings)
 {
     Console.Error.WriteLine($"[{finding.Check}] {finding.Path}: {finding.Message}");
 }
 
-Console.WriteLine(findings.Count == 0
-    ? "audit: clean"
-    : $"audit: {findings.Count} finding(s)");
-
+Console.WriteLine(findings.Count == 0 ? "audit: clean" : $"audit: {findings.Count} finding(s)");
 return findings.Count == 0 ? 0 : 1;
+
+static string? ArgumentValue(string[] arguments, string name)
+{
+    var index = Array.IndexOf(arguments, name);
+    return index >= 0 && index + 1 < arguments.Length ? arguments[index + 1] : null;
+}
