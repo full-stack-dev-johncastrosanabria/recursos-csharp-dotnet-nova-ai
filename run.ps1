@@ -32,30 +32,69 @@ function Get-ModulePath([string]$Number) {
     return $candidates[0].FullName
 }
 
+# Every discovered unit-tier test project, repo-relative. Discovery comes
+# from Training.Audit rather than a glob on a hardcoded tier name, so a
+# module that adds a new tier (say tests/ContractTests) is never silently
+# skipped here. Filtered to the unit tier on purpose: integration tests
+# need Docker and are deliberately excluded from the everyday
+# test/status loop (see README.md).
+#
+# A failure of the discovery command itself must be loud and non-zero; a
+# genuinely empty repo (no modules yet, or none with a unit tier) must stay
+# a clean, silent success — those two look identical by output alone (both
+# produce no project paths), so the discovery command's own exit status is
+# checked explicitly rather than inferred from empty output. $LASTEXITCODE
+# is not turned into a terminating error on its own here (see the 'test'
+# case below), so the check has to be explicit.
+function Get-UnitTestProjects {
+    $discovered = dotnet run --project tools/Training.Audit -- test-projects
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Test-project discovery failed: dotnet run --project tools/Training.Audit -- test-projects exited $LASTEXITCODE."
+        exit $LASTEXITCODE
+    }
+    $discovered | Where-Object { $_ -match '/UnitTests$' }
+}
+
 switch ($Command) {
     'test' {
-        if ($Module) { dotnet test --project (Join-Path (Get-ModulePath $Module) 'tests/UnitTests') }
-        elseif (Test-Path -Path 'modules' -PathType Container) {
-            Get-ChildItem -Path 'modules' -Directory | ForEach-Object {
-                dotnet test --project (Join-Path $_.FullName 'tests/UnitTests')
+        if ($Module) {
+            dotnet test --project (Join-Path (Get-ModulePath $Module) 'tests/UnitTests')
+            exit $LASTEXITCODE
+        }
+        else {
+            # dotnet's own exit code does not become this script's exit code
+            # on its own ($PSNativeCommandUseErrorActionPreference is False
+            # here), so track failure explicitly. A failing module must not
+            # hide every module after it, so keep going — but remember it
+            # happened, so the script's own exit code still tells the truth.
+            $failed = 0
+            foreach ($project in Get-UnitTestProjects) {
+                dotnet test --project $project
+                if ($LASTEXITCODE -ne 0) { $failed = 1 }
             }
+            exit $failed
         }
     }
     'status' {
         New-Item -ItemType Directory -Force -Path artifacts | Out-Null
         Remove-Item artifacts/*.trx -ErrorAction SilentlyContinue
-        if (Test-Path -Path 'modules' -PathType Container) {
-            Get-ChildItem -Path 'modules' -Directory | ForEach-Object {
-                dotnet test --project (Join-Path $_.FullName 'tests/UnitTests') `
-                    --report-trx --report-trx-filename "$($_.Name).trx" --results-directory artifacts
-            }
+        foreach ($project in Get-UnitTestProjects) {
+            $name = Split-Path (Split-Path (Split-Path $project -Parent) -Parent) -Leaf
+            # A non-zero exit is expected: unsolved exercises are failing tests.
+            dotnet test --project $project `
+                --report-trx --report-trx-filename "$name.trx" --results-directory artifacts
         }
         dotnet run --project tools/Training.Audit -- status --trx artifacts
+        exit $LASTEXITCODE
     }
     'reset' {
         if (-not $Module) { Show-Usage; exit 2 }
         $target = Join-Path (Get-ModulePath $Module) 'src/Exercises'
-        $relative = Resolve-Path -Relative $target
+        # Resolve-Path -Relative uses the platform separator, which is '\'
+        # on Windows. Git treats '\' as a pathspec escape character, so a
+        # ":(exclude)...\..." pathspec silently fails to match anything and
+        # $outside is never empty. Normalise to '/' before it reaches git.
+        $relative = (Resolve-Path -Relative $target) -replace '\\', '/'
         $outside = git status --porcelain -- . ":(exclude)$relative"
         if ($outside) {
             Write-Error "You have uncommitted changes outside $relative. Commit or stash them first."
@@ -66,6 +105,7 @@ switch ($Command) {
         $confirm = Read-Host "Type the module number again to confirm"
         if ($confirm -ne $Module) { Write-Host 'Cancelled.'; exit 1 }
         git checkout HEAD -- $relative
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         Write-Host "Reset $relative."
     }
     default { Show-Usage; exit 2 }
