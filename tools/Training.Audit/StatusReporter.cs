@@ -33,14 +33,14 @@ public static class StatusReporter
         foreach (var module in byModule)
         {
             var total = module.Count();
-            var solved = module.Count(x => !x.Test.Failed);
+            var solved = module.Count(x => x.Test.Passed);
             var state = solved == total ? "done" : solved == 0 ? "not started" : "in progress";
 
             builder.AppendLine($"{module.Key,-40}  {solved}/{total,-5}  {state}");
         }
 
         var allTests = byModule.Sum(m => m.Count());
-        var allSolved = byModule.Sum(m => m.Count(x => !x.Test.Failed));
+        var allSolved = byModule.Sum(m => m.Count(x => x.Test.Passed));
         builder.AppendLine("--------------------------------------------------------");
         builder.AppendLine($"{"total",-40}  {allSolved}/{allTests}");
 

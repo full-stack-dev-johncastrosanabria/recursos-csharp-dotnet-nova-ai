@@ -5,6 +5,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 env:
   DOTNET_NOLOGO: "true"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
@@ -32,16 +35,19 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
-      - name: Run every module against its reference solutions
+      - name: Run every discovered test project against its reference solutions
         # This is the job that makes the repo trustworthy: it proves each
-        # published exercise can actually be solved as written.
+        # published exercise can actually be solved as written. The project
+        # list comes from Training.Audit rather than a glob on a known tier
+        # name, so a module that adds a new tier (say, tests/ContractTests)
+        # can never be silently skipped here.
         run: |
-          shopt -s nullglob
-          for project in modules/*/tests/UnitTests; do
+          dotnet run --project tools/Training.Audit -- test-projects > /tmp/test-projects.txt
+          while IFS= read -r project; do
             echo "::group::$project"
             dotnet test --project "$project" -p:UseSolutions=true
             echo "::endgroup::"
-          done
+          done < /tmp/test-projects.txt
 
   stubs-are-empty:
     name: no answer left in a stub
@@ -51,18 +57,19 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           global-json-file: global.json
-      - name: Run against the stubs and collect reports
+      - name: Run every discovered test project against the stubs and collect reports
         run: |
           mkdir -p artifacts
-          shopt -s nullglob
-          for project in modules/*/tests/UnitTests; do
-            name="$(basename "$(dirname "$(dirname "$project")")")"
+          dotnet run --project tools/Training.Audit -- test-projects > /tmp/test-projects.txt
+          while IFS= read -r project; do
+            module="$(basename "$(dirname "$(dirname "$project")")")"
+            tier="$(basename "$project")"
             # Failure is the expected outcome here.
             dotnet test --project "$project" \
-              --report-trx --report-trx-filename "$name.trx" \
+              --report-trx --report-trx-filename "$module-$tier.trx" \
               --results-directory artifacts || true
-          done
-      - name: Assert every exercise test class has at least one failure
+          done < /tmp/test-projects.txt
+      - name: Assert every exercise test failed, and every module on disk is represented
         run: dotnet run --project tools/Training.Audit -- stub-leak --trx artifacts
 
   audit:
@@ -94,8 +101,13 @@ jobs:
           global-json-file: global.json
       - name: Run the Docker-backed tier against real PostgreSQL
         run: |
-          shopt -s nullglob
-          projects=(modules/*/tests/IntegrationTests)
+          dotnet run --project tools/Training.Audit -- test-projects > /tmp/test-projects.txt
+          projects=()
+          while IFS= read -r project; do
+            case "$project" in
+              */IntegrationTests) projects+=("$project") ;;
+            esac
+          done < /tmp/test-projects.txt
           if [ ${#projects[@]} -eq 0 ]; then
             echo "No integration projects yet."
             exit 0

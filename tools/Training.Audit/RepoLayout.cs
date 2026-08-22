@@ -12,6 +12,9 @@ public static partial class RepoLayout
     public const string TestSuffix = "Tests.cs";
     public const string GuideFileName = "GUIDE.md";
 
+    /// <summary>The default test tier the scaffolder generates for every module.</summary>
+    public const string UnitTestsFolder = "UnitTests";
+
     public static IEnumerable<string> ModuleDirectories(string repoRoot)
     {
         var modules = Path.Combine(repoRoot, ModulesFolder);
@@ -40,6 +43,36 @@ public static partial class RepoLayout
             ? Directory.EnumerateFiles(tests, "*" + TestSuffix, SearchOption.AllDirectories)
                        .OrderBy(f => f, StringComparer.Ordinal)
             : [];
+    }
+
+    /// <summary>
+    /// Every test project directory across every module: one level under each
+    /// module's tests/ folder, discovered by the presence of a *.csproj rather
+    /// than by assuming a tier is named "UnitTests" or "IntegrationTests".
+    ///
+    /// CI asks for this list instead of globbing a hardcoded tier name, so a
+    /// module that adds a new tier — say, tests/ContractTests — is never
+    /// silently skipped by a check that only knew the two names in use today.
+    /// </summary>
+    public static IEnumerable<string> TestProjectDirectories(string repoRoot)
+    {
+        foreach (var module in ModuleDirectories(repoRoot))
+        {
+            var testsRoot = Path.Combine(module, "tests");
+            if (!Directory.Exists(testsRoot))
+            {
+                continue;
+            }
+
+            foreach (var tier in Directory.EnumerateDirectories(testsRoot)
+                         .OrderBy(d => d, StringComparer.Ordinal))
+            {
+                if (Directory.EnumerateFiles(tier, "*.csproj").Any())
+                {
+                    yield return tier;
+                }
+            }
+        }
     }
 
     /// <summary>

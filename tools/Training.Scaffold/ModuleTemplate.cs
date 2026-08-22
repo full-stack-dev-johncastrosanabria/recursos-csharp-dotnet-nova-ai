@@ -53,7 +53,7 @@ public static class ModuleTemplate
         {
             Directory.CreateDirectory(Path.Combine(module, "src", "Exercises", folder));
             Directory.CreateDirectory(Path.Combine(module, "src", "Solutions", folder));
-            Directory.CreateDirectory(Path.Combine(module, "tests", "UnitTests", folder));
+            Directory.CreateDirectory(Path.Combine(module, "tests", RepoLayout.UnitTestsFolder, folder));
         }
 
         Directory.CreateDirectory(Path.Combine(module, "examples"));
@@ -63,7 +63,7 @@ public static class ModuleTemplate
         Write(Path.Combine(module, "src", "Solutions", "Solutions.csproj"),
             SourceProject(rootNamespace, "Solutions"));
         Write(Path.Combine(module, "src", "Exercises", ".editorconfig"), StubRelaxation);
-        Write(Path.Combine(module, "tests", "UnitTests", "UnitTests.csproj"),
+        Write(Path.Combine(module, "tests", RepoLayout.UnitTestsFolder, RepoLayout.UnitTestsFolder + ".csproj"),
             TestProject(rootNamespace, number));
         Write(RepoLayout.GuidePath(module), Guide(title, number));
     }

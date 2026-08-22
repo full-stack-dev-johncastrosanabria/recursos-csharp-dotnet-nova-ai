@@ -6,11 +6,12 @@
 dotnet --version
 ```
 
-This must report a `10.0.2xx` SDK — for example `10.0.201`. The repository
-pins its SDK band in `global.json` with `rollForward: latestFeature`, so any
-`10.0.2xx` or later patch within that band works; an older `10.0.1xx` SDK
-will not satisfy it. If you don't have .NET 10 installed, get it from
-[dotnet.microsoft.com/download](https://dotnet.microsoft.com/download).
+This must report a `10.0.2xx` SDK or later — for example `10.0.201`,
+`10.0.400`, or anything newer. The repository pins its SDK band in
+`global.json` with `rollForward: latestFeature`, so `10.0.2xx` and every
+later feature band (`10.0.3xx`, `10.0.4xx`, and so on) all satisfy it; only
+an older `10.0.1xx` SDK will not. If you don't have .NET 10 installed, get
+it from [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download).
 
 Docker is optional for most of the path — see the Docker split in
 [README.md](README.md) — but install it now if you want the integration

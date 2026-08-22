@@ -23,6 +23,16 @@ if (command == "status")
     return 0;
 }
 
+if (command == "test-projects")
+{
+    foreach (var directory in RepoLayout.TestProjectDirectories(repoRoot))
+    {
+        Console.WriteLine(Path.GetRelativePath(repoRoot, directory).Replace(Path.DirectorySeparatorChar, '/'));
+    }
+
+    return 0;
+}
+
 IReadOnlyList<AuditFinding> findings;
 
 switch (command)
@@ -49,7 +59,7 @@ switch (command)
             return 2;
         }
 
-        findings = StubLeakChecker.Run(stubLeakReport);
+        findings = StubLeakChecker.Run(stubLeakReport, repoRoot);
         break;
     case "all":
         findings =
@@ -61,7 +71,8 @@ switch (command)
         break;
     default:
         Console.Error.WriteLine(
-            "usage: audit [all|pairs|api|guides] | audit stub-leak --trx <path> | audit status --trx <path>");
+            "usage: audit [all|pairs|api|guides|test-projects] | audit stub-leak --trx <path> "
+            + "| audit status --trx <path>");
         return 2;
 }
 

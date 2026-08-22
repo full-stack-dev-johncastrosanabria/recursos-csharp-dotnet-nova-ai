@@ -71,4 +71,64 @@ public sealed class GuideTextTests
 
         GuideText.SectionHeadings(markdown).ShouldBe(["First", "Second"]);
     }
+
+    [Fact]
+    public void Counts_prose_words_per_section()
+    {
+        var markdown = """
+            ## First
+
+            one two three
+
+            ## Second
+
+            four five
+            """;
+
+        var counts = GuideText.ProseWordsBySection(markdown);
+
+        counts["First"].ShouldBe(3);
+        counts["Second"].ShouldBe(2);
+    }
+
+    [Fact]
+    public void Reports_zero_for_a_section_with_no_prose_under_it()
+    {
+        var markdown = "## Empty\n\n## Next\n\nsome words here\n";
+
+        GuideText.ProseWordsBySection(markdown)["Empty"].ShouldBe(0);
+    }
+
+    [Fact]
+    public void Excludes_fenced_code_and_tables_from_a_sections_count()
+    {
+        var markdown = """
+            ## First
+
+            one two
+
+            ```csharp
+            this does not count either
+            ```
+
+            | Column |
+            |---|
+            | value |
+
+            three
+            """;
+
+        GuideText.ProseWordsBySection(markdown)["First"].ShouldBe(3);
+    }
+
+    [Fact]
+    public void Attributes_nothing_to_text_before_the_first_heading()
+    {
+        var markdown = "stray prose with no heading yet\n\n## First\n\nreal content\n";
+
+        var counts = GuideText.ProseWordsBySection(markdown);
+
+        counts.ShouldContainKey("First");
+        counts.Values.Sum().ShouldBe(2);
+    }
 }

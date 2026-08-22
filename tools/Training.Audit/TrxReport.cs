@@ -6,6 +6,14 @@ namespace Training.Audit;
 public sealed record TrxTest(string ClassName, string MethodName, string Outcome, string CodeBase)
 {
     public bool Failed => string.Equals(Outcome, "Failed", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// True only for a genuine pass. Deliberately not "!Failed" — a skipped
+    /// or errored test is neither a failure nor solved, and counting it as
+    /// solved would let an exercise the learner never actually ran show up
+    /// as done.
+    /// </summary>
+    public bool Passed => string.Equals(Outcome, "Passed", StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>

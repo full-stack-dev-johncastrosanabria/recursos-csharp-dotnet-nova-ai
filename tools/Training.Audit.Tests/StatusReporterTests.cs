@@ -50,4 +50,27 @@ public sealed class StatusReporterTests
     {
         StatusReporter.Render(TrxReport.FromTests([])).ShouldContain("No module tests");
     }
+
+    [Fact]
+    public void Does_not_count_a_skipped_test_as_solved()
+    {
+        var report = TrxReport.FromTests(
+        [
+            InModule("01-type-system-and-memory", "Money", "Passed"),
+            InModule("01-type-system-and-memory", "Boxing", "NotExecuted"),
+        ]);
+
+        StatusReporter.Render(report).ShouldContain("1/2");
+    }
+
+    [Fact]
+    public void Does_not_count_an_errored_test_as_solved()
+    {
+        var report = TrxReport.FromTests([InModule("01-type-system-and-memory", "Money", "Error")]);
+
+        var output = StatusReporter.Render(report);
+
+        output.ShouldContain("0/1");
+        output.ShouldContain("not started");
+    }
 }

@@ -98,6 +98,17 @@ formatting on staged `.cs` files and then this same `audit -- all`. Install
 it with `tools/install-hooks.sh` if you want the check to run before every
 commit rather than only in CI.
 
+## Writing exercise tests
+
+Every test in an exercise test class must exercise a stub member — call the
+method, construct the type, read the property the exercise stub defines —
+not just inspect its shape from the outside. `stub-leak` requires every test
+in a class to fail before the exercise is solved, and it cannot tell "not
+implemented" from "nothing was asked": a test that only inspects type
+metadata (for example, asserting that a type is a `struct`) passes against
+an untouched stub every time, and will trip the stub-leak gate as a false
+leak unless it is combined with a call into the stub.
+
 ## Four conventions no check can enforce
 
 Everything above is a CI gate: get it wrong and the build tells you.
@@ -110,11 +121,11 @@ cannot rule on. Know them going in.
 This is a compiler trap that a green build can still walk into later. If a
 module's root namespace is, say, `Training.Module07`, do not declare a type
 literally named `Module07` (or, more generally, any type whose name matches
-one of its own namespace's segments). The concrete failure mode: the
-throwaway module in this repo lives at `Training.Probe.*`; if it declared a
-type named `Probe`, that type could not be referenced from its own test
-project at `Training.Probe.Tests.*`, because the compiler resolves the
-identifier `Probe` against the namespace segment first and reports
+one of its own namespace's segments). The concrete failure mode: suppose
+module 07's root namespace is `Training.Module07` and it declares a type
+named `Module07`; that type could not be referenced from its own test
+project at `Training.Module07.Tests.*`, because the compiler resolves the
+identifier `Module07` against the namespace segment first and reports
 `CS0234` — "the type or namespace name does not exist" — even though the
 type is right there. This compiles fine in isolation and only breaks once
 something downstream tries to reference it by its short name, so review
