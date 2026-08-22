@@ -194,7 +194,23 @@ public static class ApiSurfaceChecker
     private static string Accessors(AccessorListSyntax? accessors)
         => accessors is null
             ? "get;"
-            : string.Join(" ", accessors.Accessors.Select(a => a.Keyword.Text + ";"));
+            : string.Join(
+                " ",
+                accessors.Accessors
+                    .Where(IsPartOfThePublicSurface)
+                    .Select(a => a.Keyword.Text + ";"));
+
+    /// <summary>
+    /// An accessor with its own accessibility modifier is more restrictive than
+    /// the property, so it is not part of what a caller can see. A learner who
+    /// implements `public int Count { get; }` as `{ get; private set; }` has
+    /// changed nothing observable, and the check must not fail them for it.
+    /// </summary>
+    private static bool IsPartOfThePublicSurface(AccessorDeclarationSyntax accessor)
+        => !accessor.Modifiers.Any(m =>
+            m.IsKind(SyntaxKind.PrivateKeyword)
+            || m.IsKind(SyntaxKind.ProtectedKeyword)
+            || m.IsKind(SyntaxKind.InternalKeyword));
 
     /// <summary>Canonical text for a syntax fragment, independent of how the source wrapped it.</summary>
     private static string Render(SyntaxNode? node)

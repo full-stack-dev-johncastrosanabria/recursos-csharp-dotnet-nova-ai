@@ -68,4 +68,5 @@ nav:
   - Start here: START-HERE.md
   - Runtime and language semantics:
       - 01 · Type system and memory model: modules/01-type-system-and-memory/GUIDE.md
+      - 02 · Object lifetime, GC and disposal: modules/02-object-lifetime-gc-and-disposal/GUIDE.md
   - Contributing: CONTRIBUTING.md

@@ -269,5 +269,31 @@ public sealed class ApiSurfaceCheckerTests : IDisposable
         ApiSurfaceChecker.Run(_root).ShouldNotBeEmpty();
     }
 
+    [Fact]
+    public void A_private_setter_is_not_part_of_the_public_surface()
+    {
+        // A learner implementing a stub's `public int Count { get; }` as
+        // `{ get; private set; }` has changed nothing a caller can see. The
+        // check must not fail them for it.
+        WriteSource("Exercises", "Counter.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Counter
+            {
+                public int Count { get; }
+            }
+            """);
+        WriteSource("Solutions", "Counter.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Counter
+            {
+                public int Count { get; private set; }
+            }
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
+    }
+
     public void Dispose() => Directory.Delete(_root, recursive: true);
 }
