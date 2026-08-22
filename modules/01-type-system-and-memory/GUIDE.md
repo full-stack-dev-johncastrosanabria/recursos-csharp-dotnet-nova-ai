@@ -304,6 +304,18 @@ written to agree hitting it. The fix is roughly fifteen lines: compare `Lines`
 with `SequenceEqual` and build the hash from the same elements. That is the
 whole repair, and it is exercise 4.
 
+One decision inside that repair is worth making deliberately rather than
+inheriting: `SequenceEqual` makes line *order* part of the key, so the same two
+products added in the opposite order produce a different key and a retry in
+that shape would not be recognised. For a retried HTTP request, which replays
+an identical payload, that is the right call and the cheapest correct one.
+Treating the basket as a set instead is defensible for a client that reorders
+lines, but it costs an order-independent hash — sum or XOR the element hashes
+rather than combining them in sequence — and it makes two genuinely different
+baskets collide more often. `BasketKeyTests.Line_order_is_part_of_the_key`
+pins whichever choice you make, which is the actual point: the failure here was
+never the ordering, it was that nobody chose.
+
 ## Exercises
 
 All eight live in `modules/01-type-system-and-memory`. Run the whole module
