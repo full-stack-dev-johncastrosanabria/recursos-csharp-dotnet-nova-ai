@@ -1,0 +1,69 @@
+site_name: Recursos C# · .NET · Nova AI
+site_description: A 30-module path from C# runtime semantics to senior distributed system judgement
+repo_url: https://github.com/full-stack-dev-johncastrosanabria/recursos-csharp-dotnet-nova-ai
+edit_uri: edit/main/
+docs_dir: .
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - navigation.indexes
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+    - search.highlight
+    - search.suggest
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+
+plugins:
+  - search
+  - same-dir
+
+exclude_docs: |
+  artifacts/
+  .superpowers/
+  .venv-docs/
+  docs/superpowers/
+  tools/
+  system/
+  modules/*/src/
+  modules/*/tests/
+  modules/*/examples/
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: README.md
+  - Start here: START-HERE.md
+  - Contributing: CONTRIBUTING.md

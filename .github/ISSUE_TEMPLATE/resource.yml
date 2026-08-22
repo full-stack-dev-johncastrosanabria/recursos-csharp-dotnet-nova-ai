@@ -1,0 +1,39 @@
+name: Resource suggestion
+description: Suggest a link, article, or reference to add to a module's Resources section.
+title: "[Resource] "
+labels: ["resource"]
+body:
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: Which module does this belong to? (e.g. 05-the-http-pipeline)
+      placeholder: NN-slug
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: Link to the resource.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this resource
+      description: What does it add that the guide's existing Resources don't already cover?
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Official documentation
+        - Blog post or article
+        - Talk or video
+        - Specification or RFC
+        - Other
+    validations:
+      required: true

@@ -1,0 +1,27 @@
+name: Links
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Catch link rot in resources nobody is actively editing.
+    - cron: "0 6 * * 1"
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check links in guides and root docs
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --exclude-mail
+            --exclude-path .superpowers
+            --exclude-path site
+            --exclude-path artifacts
+            --exclude-path .venv-docs
+            './**/*.md'
+          fail: true
