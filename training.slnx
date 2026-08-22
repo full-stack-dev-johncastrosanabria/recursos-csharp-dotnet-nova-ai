@@ -1,4 +1,13 @@
 <Solution>
+  <Folder Name="/modules/" />
+  <Folder Name="/modules/01-type-system-and-memory/" />
+  <Folder Name="/modules/01-type-system-and-memory/src/">
+    <Project Path="modules/01-type-system-and-memory/src/Exercises/Exercises.csproj" />
+    <Project Path="modules/01-type-system-and-memory/src/Solutions/Solutions.csproj" />
+  </Folder>
+  <Folder Name="/modules/01-type-system-and-memory/tests/">
+    <Project Path="modules/01-type-system-and-memory/tests/UnitTests/UnitTests.csproj" />
+  </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
     <Project Path="tools/Training.Audit/Training.Audit.csproj" />
