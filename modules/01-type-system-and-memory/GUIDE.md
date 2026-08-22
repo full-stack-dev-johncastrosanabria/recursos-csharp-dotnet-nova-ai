@@ -283,10 +283,11 @@ disputes, days later, one at a time — and each one is investigated as an
 individual incident rather than as a pattern, because that is what the shape of
 the evidence suggests.
 
-**What it costs.** These are named assumptions, not measurements; substitute
-your own and the arithmetic still works. Take 4,000 orders a day and a 2% retry
-rate — retries come from flaky mobile connections, impatient double-taps and
-gateway timeouts, and 2% is not a pessimistic figure. That is 80 duplicate
+**What it would cost you.** Every number below is an input, not a finding.
+Substitute your own and the arithmetic is unchanged; that shape is the part
+worth keeping. Take 4,000 orders a day and a 2% retry rate — retries come from
+flaky mobile connections, impatient double-taps and gateway timeouts, so your
+own rate is something you can measure rather than guess. That is 80 duplicate
 charges a day. At an average basket of 85 and a chargeback fee of 15 per
 dispute, each duplicate costs about 100 once refunded and disputed: roughly
 8,000 a day, or 240,000 over a thirty-day window, before anyone counts support
