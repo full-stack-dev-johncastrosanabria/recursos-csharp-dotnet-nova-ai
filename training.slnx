@@ -65,6 +65,19 @@
   <Folder Name="/modules/05-host-configuration-and-options/tests/">
     <Project Path="modules/05-host-configuration-and-options/tests/UnitTests/UnitTests.csproj" />
   </Folder>
+  <Folder Name="/modules/06-dependency-injection/" />
+  <Folder Name="/modules/06-dependency-injection/examples/">
+    <Project Path="modules/06-dependency-injection/examples/CaptiveScope/CaptiveScope.csproj" />
+    <Project Path="modules/06-dependency-injection/examples/LifetimeMatrix/LifetimeMatrix.csproj" />
+    <Project Path="modules/06-dependency-injection/examples/TransientLeak/TransientLeak.csproj" />
+  </Folder>
+  <Folder Name="/modules/06-dependency-injection/src/">
+    <Project Path="modules/06-dependency-injection/src/Exercises/Exercises.csproj" />
+    <Project Path="modules/06-dependency-injection/src/Solutions/Solutions.csproj" />
+  </Folder>
+  <Folder Name="/modules/06-dependency-injection/tests/">
+    <Project Path="modules/06-dependency-injection/tests/UnitTests/UnitTests.csproj" />
+  </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
     <Project Path="tools/Training.Audit/Training.Audit.csproj" />
