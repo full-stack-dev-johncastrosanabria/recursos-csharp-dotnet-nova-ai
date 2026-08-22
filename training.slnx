@@ -39,6 +39,14 @@
   <Folder Name="/modules/03-async-await-and-the-thread-pool/tests/">
     <Project Path="modules/03-async-await-and-the-thread-pool/tests/UnitTests/UnitTests.csproj" />
   </Folder>
+  <Folder Name="/modules/04-linq-and-the-modern-language-surface/" />
+  <Folder Name="/modules/04-linq-and-the-modern-language-surface/src/">
+    <Project Path="modules/04-linq-and-the-modern-language-surface/src/Exercises/Exercises.csproj" />
+    <Project Path="modules/04-linq-and-the-modern-language-surface/src/Solutions/Solutions.csproj" />
+  </Folder>
+  <Folder Name="/modules/04-linq-and-the-modern-language-surface/tests/">
+    <Project Path="modules/04-linq-and-the-modern-language-surface/tests/UnitTests/UnitTests.csproj" />
+  </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
     <Project Path="tools/Training.Audit/Training.Audit.csproj" />
