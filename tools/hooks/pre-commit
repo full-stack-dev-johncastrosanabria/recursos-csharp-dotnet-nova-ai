@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Pre-commit gate. Deliberately fast: formatting on staged files, then the
+# invariant checks. The full test suite belongs in CI, not in your way.
+set -euo pipefail
+
+staged_cs="$(git diff --cached --name-only --diff-filter=ACM -- '*.cs')"
+
+if [[ -n "$staged_cs" ]]; then
+  echo "pre-commit: checking formatting"
+  dotnet format --verify-no-changes --include $staged_cs
+fi
+
+echo "pre-commit: checking repository invariants"
+dotnet run --project tools/Training.Audit -- all

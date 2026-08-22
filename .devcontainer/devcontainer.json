@@ -1,0 +1,21 @@
+{
+  "name": "recursos-csharp-dotnet-nova-ai",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.13"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "editorconfig.editorconfig"
+      ]
+    }
+  },
+  "postCreateCommand": "dotnet --version && dotnet restore",
+  "remoteUser": "vscode"
+}

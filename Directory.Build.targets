@@ -1,0 +1,20 @@
+<Project>
+
+  <!--
+    Every training test project references exactly one of its module's two
+    source projects. Both expose identical namespaces and identical public
+    signatures, so the test code compiles unchanged against either.
+
+      dotnet test <module>                        -> Exercises  (red until solved)
+      dotnet test <module> -p:UseSolutions=true   -> Solutions  (must be green)
+
+    CI runs the second form to prove every published exercise is solvable.
+  -->
+  <ItemGroup Condition="'$(IsTrainingTestProject)' == 'true'">
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\src\Exercises\Exercises.csproj"
+                      Condition="'$(UseSolutions)' != 'true'" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\src\Solutions\Solutions.csproj"
+                      Condition="'$(UseSolutions)' == 'true'" />
+  </ItemGroup>
+
+</Project>

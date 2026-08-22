@@ -6,3 +6,6 @@ obj/
 site/
 .DS_Store
 TestResults/
+.superpowers/
+.venv-docs/
+artifacts/

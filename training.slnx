@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/tools/">
+    <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
+    <Project Path="tools/Training.Audit/Training.Audit.csproj" />
+    <Project Path="tools/Training.Scaffold.Tests/Training.Scaffold.Tests.csproj" />
+    <Project Path="tools/Training.Scaffold/Training.Scaffold.csproj" />
+  </Folder>
+</Solution>

@@ -18,7 +18,9 @@ Every task's requirements implicitly include this section. Values are copied ver
 - **`<Nullable>enable</Nullable>`** and **`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`** on every project without exception.
 - **Analyser relaxation is limited to exactly four rules** — `IDE0060`, `CA1801`, `CA1822`, `CS1998` — and only inside `modules/*/src/Exercises/` via a nested `.editorconfig`. Nothing else is relaxed anywhere.
 - **No package that is not free for commercial use.** Specifically banned: FluentAssertions 8+, MediatR 13+, AutoMapper 15+, MassTransit 9+. Verified-free replacements: Shouldly, a hand-rolled mediator, explicit mapping methods, MassTransit 8.5.4.
-- **xunit.v3 runs on Microsoft Testing Platform.** Test projects are `<OutputType>Exe</OutputType>` with `<TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>`. Do **not** add `Microsoft.NET.Test.Sdk` or `coverlet.collector`.
+- **xunit.v3 runs on Microsoft Testing Platform.** Test projects are `<OutputType>Exe</OutputType>` plus `<IsTrainingTestProject>true</IsTrainingTestProject>`. Do **not** add `Microsoft.NET.Test.Sdk` or `coverlet.collector`, and do **not** add `TestingPlatformDotnetTestSupport` — on .NET 10 the opt-in is the `"test": { "runner": "Microsoft.Testing.Platform" }` block in `global.json`, and without it the SDK refuses to run MTP tests at all.
+- **`dotnet test` requires `--project <path>`** on .NET 10. A positional path is rejected. TRX options pass directly with no `--` separator: `dotnet test --project <p> --report-trx --report-trx-filename x.trx --results-directory <dir>`.
+- **Never name a type after one of its own namespace segments.** A type `Probe` inside `Training.Probe.*` cannot be referenced from a test in `Training.Probe.Tests.*` — the identifier binds to the namespace and the compiler reports CS0234.
 - **All package versions are centrally managed** in `Directory.Packages.props`. No `Version=` attribute on any `PackageReference`.
 - **EF Core migrations are always explicit.** `EnsureCreated` must not appear anywhere in the repository, including examples.
 - **Prose in English**; identifiers, folder names and commit messages in English.
@@ -98,6 +100,9 @@ Create `global.json`:
   "sdk": {
     "version": "10.0.200",
     "rollForward": "latestFeature"
+  },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
   }
 }
 ```
@@ -115,7 +120,8 @@ Create `Directory.Build.props`:
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisMode>Recommended</AnalysisMode>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 </Project>
 ```
@@ -156,9 +162,17 @@ csharp_style_namespace_declarations = file_scoped:error
 csharp_style_var_when_type_is_apparent = true:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:error
 dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.IDE0051.severity = error
 dotnet_diagnostic.IDE0055.severity = error
 dotnet_diagnostic.CA1062.severity = none
 dotnet_diagnostic.CA2007.severity = none
+
+# Test method names are sentences by convention in every module of this repo,
+# and that convention is worth more than the identifier rule it breaks. The
+# glob is by filename, not directory: [**/tests/**/*.cs] does not match a
+# tests/ folder directly beside the .editorconfig.
+[*Tests.cs]
+dotnet_diagnostic.CA1707.severity = none
 
 [*.{xml,csproj,props,targets,yml,yaml,json}]
 indent_style = space
@@ -270,7 +284,6 @@ Create `modules/00-probe/tests/UnitTests/UnitTests.csproj`:
     <RootNamespace>Training.Probe.Tests</RootNamespace>
     <AssemblyName>Probe.UnitTests</AssemblyName>
     <OutputType>Exe</OutputType>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <IsTrainingTestProject>true</IsTrainingTestProject>
   </PropertyGroup>
 
@@ -346,13 +359,13 @@ Create `modules/00-probe/src/Solutions/Solutions.csproj`:
 
 - [ ] **Step 2: Run the tests against the stubs — they must fail**
 
-Run: `dotnet test modules/00-probe/tests/UnitTests`
+Run: `dotnet test --project modules/00-probe/tests/UnitTests`
 
 Expected: **FAIL**, 1 test failed, the failure message containing `System.NotImplementedException`. A pass here means the stub already contains the answer.
 
 - [ ] **Step 3: Run the tests against the solutions — they must pass**
 
-Run: `dotnet test modules/00-probe/tests/UnitTests -p:UseSolutions=true`
+Run: `dotnet test --project modules/00-probe/tests/UnitTests -p:UseSolutions=true`
 
 Expected: **PASS**, 1 test passed. This is the invariant the whole repository rests on: same test code, same namespaces, different assembly.
 
@@ -463,7 +476,6 @@ Create `tools/Training.Audit.Tests/Training.Audit.Tests.csproj`:
   <PropertyGroup>
     <RootNamespace>Training.Audit.Tests</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -486,7 +498,7 @@ Note: this project deliberately does **not** set `IsTrainingTestProject`, so `Di
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **FAIL** to compile — `Training.Audit` does not exist yet.
 
 - [ ] **Step 3: Write the implementation**
@@ -665,7 +677,7 @@ return findings.Count == 0 ? 0 : 1;
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **PASS**, 4 tests passed.
 
 - [ ] **Step 5: Verify it runs against the real repository**
@@ -821,7 +833,7 @@ public sealed class ApiSurfaceCheckerTests : IDisposable
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `dotnet test tools/Training.Audit.Tests --filter-class Training.Audit.Tests.ApiSurfaceCheckerTests`
+Run: `dotnet test --project tools/Training.Audit.Tests --filter-class Training.Audit.Tests.ApiSurfaceCheckerTests`
 Expected: **FAIL** to compile — `ApiSurfaceChecker` does not exist.
 
 - [ ] **Step 3: Write the implementation**
@@ -1000,7 +1012,7 @@ IReadOnlyList<AuditFinding> findings = command switch
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **PASS**, 9 tests passed (4 from Task 3, 5 new).
 
 - [ ] **Step 5: Verify against the real repository**
@@ -1187,7 +1199,7 @@ public sealed class GuideAnatomyCheckerTests : IDisposable
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **FAIL** to compile — `GuideText` and `GuideAnatomyChecker` do not exist.
 
 - [ ] **Step 3: Write the implementation**
@@ -1379,7 +1391,7 @@ IReadOnlyList<AuditFinding> findings = command switch
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **PASS**, 19 tests passed.
 
 - [ ] **Step 5: Commit**
@@ -1561,7 +1573,7 @@ public sealed class StubLeakCheckerTests
 
 - [ ] **Step 2: Run the tests to verify they fail**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **FAIL** to compile — `TrxReport` and `StubLeakChecker` do not exist.
 
 - [ ] **Step 3: Write the implementation**
@@ -1706,7 +1718,7 @@ public static class StubLeakChecker
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **PASS**, 26 tests passed.
 
 - [ ] **Step 5: Commit**
@@ -1797,7 +1809,7 @@ public sealed class StatusReporterTests
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `dotnet test tools/Training.Audit.Tests --filter-class Training.Audit.Tests.StatusReporterTests`
+Run: `dotnet test --project tools/Training.Audit.Tests --filter-class Training.Audit.Tests.StatusReporterTests`
 Expected: **FAIL** to compile — `StatusReporter` does not exist.
 
 - [ ] **Step 3: Write the implementation**
@@ -1940,7 +1952,7 @@ static string? ArgumentValue(string[] arguments, string name)
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `dotnet test tools/Training.Audit.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests`
 Expected: **PASS**, 30 tests passed.
 
 - [ ] **Step 5: Verify the CLI end to end**
@@ -2058,7 +2070,6 @@ Create `tools/Training.Scaffold.Tests/Training.Scaffold.Tests.csproj`:
   <PropertyGroup>
     <RootNamespace>Training.Scaffold.Tests</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -2080,7 +2091,7 @@ Create `tools/Training.Scaffold.Tests/Training.Scaffold.Tests.csproj`:
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `dotnet test tools/Training.Scaffold.Tests`
+Run: `dotnet test --project tools/Training.Scaffold.Tests`
 Expected: **FAIL** to compile — `Training.Scaffold` does not exist.
 
 - [ ] **Step 3: Write the implementation**
@@ -2163,8 +2174,7 @@ public static class ModuleTemplate
             <RootNamespace>{rootNamespace}.Tests</RootNamespace>
             <AssemblyName>Module{number:D2}.UnitTests</AssemblyName>
             <OutputType>Exe</OutputType>
-            <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-            <IsTrainingTestProject>true</IsTrainingTestProject>
+                    <IsTrainingTestProject>true</IsTrainingTestProject>
           </PropertyGroup>
 
           <ItemGroup>
@@ -2240,7 +2250,7 @@ return 0;
 
 - [ ] **Step 4: Run the tests to verify they pass**
 
-Run: `dotnet test tools/Training.Scaffold.Tests`
+Run: `dotnet test --project tools/Training.Scaffold.Tests`
 Expected: **PASS**, 6 tests passed.
 
 - [ ] **Step 5: Commit**
@@ -2283,14 +2293,15 @@ usage:
 
   NN is the module number, e.g. 03. Integration tests are excluded from
   `test` by design: they need Docker. Run them with
-  `dotnet test modules/NN-*/tests/IntegrationTests`.
+  `dotnet test --project modules/NN-*/tests/IntegrationTests`.
 USAGE
 }
 
 module_path() {
   local number="$1"
+  shopt -s nullglob
   local matches=(modules/"${number}"-*)
-  if [[ ! -d "${matches[0]}" ]]; then
+  if [[ ! -d "${matches[0]:-}" ]]; then
     echo "No module numbered ${number}." >&2
     exit 1
   fi
@@ -2300,11 +2311,12 @@ module_path() {
 case "${1:-}" in
   test)
     if [[ -n "${2:-}" ]]; then
-      dotnet test "$(module_path "$2")/tests/UnitTests"
+      dotnet test --project "$(module_path "$2")/tests/UnitTests"
     else
       # dotnet test takes one project at a time, so iterate rather than glob.
+      shopt -s nullglob
       for project in modules/*/tests/UnitTests; do
-        dotnet test "$project"
+        dotnet test --project "$project"
       done
     fi
     ;;
@@ -2312,10 +2324,11 @@ case "${1:-}" in
   status)
     mkdir -p artifacts
     rm -f artifacts/*.trx
+    shopt -s nullglob
     for project in modules/*/tests/UnitTests; do
       name="$(basename "$(dirname "$(dirname "$project")")")"
       # A non-zero exit is expected: unsolved exercises are failing tests.
-      dotnet test "$project" \
+      dotnet test --project "$project" \
         --report-trx --report-trx-filename "$name.trx" --results-directory artifacts || true
     done
     dotnet run --project tools/Training.Audit -- status --trx artifacts
@@ -2395,10 +2408,10 @@ function Get-ModulePath([string]$Number) {
 
 switch ($Command) {
     'test' {
-        if ($Module) { dotnet test (Join-Path (Get-ModulePath $Module) 'tests/UnitTests') }
+        if ($Module) { dotnet test --project (Join-Path (Get-ModulePath $Module) 'tests/UnitTests') }
         else {
             Get-ChildItem -Path 'modules' -Directory | ForEach-Object {
-                dotnet test (Join-Path $_.FullName 'tests/UnitTests')
+                dotnet test --project (Join-Path $_.FullName 'tests/UnitTests')
             }
         }
     }
@@ -2406,7 +2419,7 @@ switch ($Command) {
         New-Item -ItemType Directory -Force -Path artifacts | Out-Null
         Remove-Item artifacts/*.trx -ErrorAction SilentlyContinue
         Get-ChildItem -Path 'modules' -Directory | ForEach-Object {
-            dotnet test (Join-Path $_.FullName 'tests/UnitTests') `
+            dotnet test --project (Join-Path $_.FullName 'tests/UnitTests') `
                 --report-trx --report-trx-filename "$($_.Name).trx" --results-directory artifacts
         }
         dotnet run --project tools/Training.Audit -- status --trx artifacts
@@ -2495,9 +2508,10 @@ jobs:
         # This is the job that makes the repo trustworthy: it proves each
         # published exercise can actually be solved as written.
         run: |
+          shopt -s nullglob
           for project in modules/*/tests/UnitTests; do
             echo "::group::$project"
-            dotnet test "$project" -p:UseSolutions=true
+            dotnet test --project "$project" -p:UseSolutions=true
             echo "::endgroup::"
           done
 
@@ -2512,10 +2526,11 @@ jobs:
       - name: Run against the stubs and collect reports
         run: |
           mkdir -p artifacts
+          shopt -s nullglob
           for project in modules/*/tests/UnitTests; do
             name="$(basename "$(dirname "$(dirname "$project")")")"
             # Failure is the expected outcome here.
-            dotnet test "$project" \
+            dotnet test --project "$project" \
               --report-trx --report-trx-filename "$name.trx" \
               --results-directory artifacts || true
           done
@@ -2531,9 +2546,9 @@ jobs:
         with:
           global-json-file: global.json
       - name: Test the audit tool itself
-        run: dotnet test tools/Training.Audit.Tests
+        run: dotnet test --project tools/Training.Audit.Tests
       - name: Test the scaffolder
-        run: dotnet test tools/Training.Scaffold.Tests
+        run: dotnet test --project tools/Training.Scaffold.Tests
       - name: Pairs, API parity, guide anatomy and word count
         run: dotnet run --project tools/Training.Audit -- all
 
@@ -2555,7 +2570,7 @@ jobs:
           fi
           for project in "${projects[@]}"; do
             echo "::group::$project"
-            dotnet test "$project" -p:UseSolutions=true
+            dotnet test --project "$project" -p:UseSolutions=true
             echo "::endgroup::"
           done
 ```
@@ -2675,6 +2690,8 @@ plugins:
 
 exclude_docs: |
   artifacts/
+  .superpowers/
+  .venv-docs/
   docs/superpowers/
   tools/
   system/
@@ -2812,7 +2829,7 @@ The probe has done its job: it proved the build gates bite, the swap works both 
 
 - [ ] **Step 1: Confirm the probe is currently proving something**
 
-Run: `dotnet test modules/00-probe/tests/UnitTests -p:UseSolutions=true`
+Run: `dotnet test --project modules/00-probe/tests/UnitTests -p:UseSolutions=true`
 Expected: **PASS**. This is the last time the machinery is verified before real content arrives.
 
 - [ ] **Step 2: Delete it**
@@ -2828,7 +2845,7 @@ Expected: `audit: clean`, exit code 0. With no modules, every check has nothing 
 
 - [ ] **Step 4: Verify the tool tests still pass**
 
-Run: `dotnet test tools/Training.Audit.Tests && dotnet test tools/Training.Scaffold.Tests`
+Run: `dotnet test --project tools/Training.Audit.Tests && dotnet test --project tools/Training.Scaffold.Tests`
 Expected: **PASS** for both. The tools' own tests use temporary directories, so deleting the probe cannot affect them.
 
 - [ ] **Step 5: Commit**
@@ -3161,7 +3178,7 @@ public sealed class CustomerReference : IEquatable<CustomerReference>
 
 - [ ] **Step 6: Run the tests against the solutions**
 
-Run: `dotnet test modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
+Run: `dotnet test --project modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
 Expected: **PASS**, 15 tests passed.
 
 - [ ] **Step 7: Run the tests against the stubs one more time**
@@ -3585,7 +3602,7 @@ public readonly struct ReservationWindow
 
 - [ ] **Step 5: Run against the solutions**
 
-Run: `dotnet test modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
+Run: `dotnet test --project modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
 Expected: **PASS**, 30 tests passed.
 
 - [ ] **Step 6: Run against the stubs**
@@ -3984,7 +4001,7 @@ public readonly struct SkuList
 
 - [ ] **Step 5: Run against the solutions**
 
-Run: `dotnet test modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
+Run: `dotnet test --project modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
 Expected: **PASS**, 42 tests passed.
 
 - [ ] **Step 6: Verify API parity picked up the nested enumerator**
@@ -4139,14 +4156,14 @@ with its cost derived from named assumptions."
 
 - [ ] **Step 1: Every exercise is solvable**
 
-Run: `dotnet test modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
+Run: `dotnet test --project modules/01-type-system-and-memory/tests/UnitTests -p:UseSolutions=true`
 Expected: **PASS**, 42 tests passed.
 
 - [ ] **Step 2: No answer leaked into a stub**
 
 ```bash
 mkdir -p artifacts && rm -f artifacts/*.trx
-dotnet test modules/01-type-system-and-memory/tests/UnitTests \
+dotnet test --project modules/01-type-system-and-memory/tests/UnitTests \
   --report-trx --report-trx-filename 01.trx --results-directory artifacts || true
 dotnet run --project tools/Training.Audit -- stub-leak --trx artifacts
 ```
@@ -4205,7 +4222,7 @@ Each module is one subagent, one commit, and always the same eleven steps:
 3. Write the stubs. Every one throws `NotImplementedException`.
 4. `./run.sh test NN` → must be **red**, with every test failing on `NotImplementedException`.
 5. Write the reference solutions.
-6. `dotnet test modules/<slug>/tests/UnitTests -p:UseSolutions=true` → must be **green**.
+6. `dotnet test --project modules/<slug>/tests/UnitTests -p:UseSolutions=true` → must be **green**.
 7. `dotnet run --project tools/Training.Audit -- api` → must be clean.
 8. Write the 2–3 examples, including the one that reproduces the real-world case.
 9. Write `GUIDE.md` to the section budget from Task 17.

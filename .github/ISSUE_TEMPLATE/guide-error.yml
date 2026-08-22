@@ -1,0 +1,41 @@
+name: Guide error
+description: Report an error, unclear explanation, or outdated claim in a module guide.
+title: "[Guide] "
+labels: ["guide-error"]
+body:
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: Which module's guide? (e.g. 03-async-and-cancellation)
+      placeholder: NN-slug
+    validations:
+      required: true
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: The section heading, or a short quote, that pinpoints where the error appears.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong
+      description: What does the guide say, and why is it wrong, unclear, or out of date?
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Suggested correction
+      description: If you know the right answer, say what it is. A source or reproduction is worth more than an assertion.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked this isn't already reported in an open issue.
+          required: true
