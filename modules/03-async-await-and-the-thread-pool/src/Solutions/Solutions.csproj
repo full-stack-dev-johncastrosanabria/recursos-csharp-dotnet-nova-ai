@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Training.Module03</RootNamespace>
+    <AssemblyName>Solutions</AssemblyName>
+  </PropertyGroup>
+</Project>
