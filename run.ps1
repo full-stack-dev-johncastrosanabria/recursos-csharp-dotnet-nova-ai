@@ -80,9 +80,18 @@ switch ($Command) {
         Remove-Item artifacts/*.trx -ErrorAction SilentlyContinue
         foreach ($project in Get-UnitTestProjects) {
             $name = Split-Path (Split-Path (Split-Path $project -Parent) -Parent) -Leaf
-            # A non-zero exit is expected: unsolved exercises are failing tests.
+            # A non-zero exit is expected: unsolved exercises are failing tests, so
+            # the run's own output is noise here. status answers "which modules are
+            # solved", and ./run.ps1 test is where you go to read failures.
             dotnet test --project $project `
-                --report-trx --report-trx-filename "$name.trx" --results-directory artifacts
+                --report-trx --report-trx-filename "$name.trx" --results-directory artifacts `
+                *> $null
+            # A module that produced no report would simply be missing from the
+            # table, which reads identically to a module with nothing solved.
+            if (-not (Test-Path (Join-Path 'artifacts' "$name.trx"))) {
+                Write-Error "Could not collect results for $name. Run: dotnet test --project $project"
+                exit 1
+            }
         }
         dotnet run --project tools/Training.Audit -- status --trx artifacts
         exit $LASTEXITCODE

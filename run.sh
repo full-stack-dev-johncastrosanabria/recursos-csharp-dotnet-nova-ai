@@ -85,9 +85,19 @@ case "${1:-}" in
     while IFS= read -r project; do
       [[ -n "$project" ]] || continue
       name="$(basename "$(dirname "$(dirname "$project")")")"
-      # A non-zero exit is expected: unsolved exercises are failing tests.
+      # A non-zero exit is expected: unsolved exercises are failing tests, so
+      # the run's own output is noise here. status answers "which modules are
+      # solved", and ./run.sh test is where you go to read failures.
       dotnet test --project "$project" \
-        --report-trx --report-trx-filename "$name.trx" --results-directory artifacts || true
+        --report-trx --report-trx-filename "$name.trx" --results-directory artifacts \
+        >/dev/null 2>&1 || true
+      # A module that produced no report would simply be missing from the
+      # table, which reads identically to a module with nothing solved.
+      if [[ ! -f "artifacts/$name.trx" ]]; then
+        echo "Could not collect results for $name." >&2
+        echo "Run: dotnet test --project $project" >&2
+        exit 1
+      fi
     done <<< "$projects"
     dotnet run --project tools/Training.Audit -- status --trx artifacts
     ;;
