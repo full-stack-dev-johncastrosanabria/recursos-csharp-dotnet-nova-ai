@@ -80,13 +80,19 @@ public static class ApiSurfaceChecker
                     continue;
                 }
 
-                // A positional record's parameters are its public API — Amount and
-                // Currency below are compiler-synthesised properties that never
-                // appear in Members — but they only exist as a ParameterList, so
-                // they need their own surface entry.
-                if (declaration is RecordDeclarationSyntax { ParameterList: { } primaryConstructor })
+                // A primary constructor is public API that never appears in
+                // Members -- it exists only as a ParameterList on the type. That
+                // is true for a positional record, whose parameters are also its
+                // synthesised properties, and equally for a class or struct.
+                //
+                // It is rendered exactly like an explicit constructor, because to
+                // a caller `new Reader(source)` is the same API either way.
+                // Converting between the two forms is an ordinary refactor and
+                // must not read as a change in surface.
+                if (declaration.ParameterList is { } primaryConstructor
+                    && IsPubliclyVisible(declaration.Modifiers))
                 {
-                    surface.Add($"{typeName}.primary-ctor{Render(primaryConstructor)}");
+                    surface.Add($"{typeName}.public ctor {Render(primaryConstructor)}");
                 }
 
                 foreach (var member in declaration.Members)

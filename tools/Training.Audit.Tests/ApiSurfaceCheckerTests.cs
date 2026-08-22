@@ -295,5 +295,51 @@ public sealed class ApiSurfaceCheckerTests : IDisposable
         ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
     }
 
+    [Fact]
+    public void A_primary_constructor_matches_an_explicit_one_with_the_same_parameters()
+    {
+        // From a caller's side `new Reader(dep)` is the same API either way, so
+        // converting a stub's explicit constructor to a primary constructor --
+        // an ordinary refactor, and one this repo's own guides recommend --
+        // must not read as a change in public surface.
+        WriteSource("Exercises", "Reader.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Reader
+            {
+                public Reader(string source) => Source = source;
+
+                public string Source { get; }
+            }
+            """);
+        WriteSource("Solutions", "Reader.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Reader(string source)
+            {
+                public string Source { get; } = source;
+            }
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void A_primary_constructor_with_different_parameters_is_still_a_difference()
+    {
+        WriteSource("Exercises", "Reader.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Reader(string source);
+            """);
+        WriteSource("Solutions", "Reader.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Reader(int source);
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldNotBeEmpty();
+    }
+
     public void Dispose() => Directory.Delete(_root, recursive: true);
 }

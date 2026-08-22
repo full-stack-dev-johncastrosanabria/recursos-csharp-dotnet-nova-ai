@@ -71,4 +71,6 @@ nav:
       - 02 · Object lifetime, GC and disposal: modules/02-object-lifetime-gc-and-disposal/GUIDE.md
       - 03 · Async, await and the thread pool: modules/03-async-await-and-the-thread-pool/GUIDE.md
       - 04 · LINQ and the modern language surface: modules/04-linq-and-the-modern-language-surface/GUIDE.md
+  - Framework and platform:
+      - 05 · Host configuration and options: modules/05-host-configuration-and-options/GUIDE.md
   - Contributing: CONTRIBUTING.md
