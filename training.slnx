@@ -40,12 +40,30 @@
     <Project Path="modules/03-async-await-and-the-thread-pool/tests/UnitTests/UnitTests.csproj" />
   </Folder>
   <Folder Name="/modules/04-linq-and-the-modern-language-surface/" />
+  <Folder Name="/modules/04-linq-and-the-modern-language-surface/examples/">
+    <Project Path="modules/04-linq-and-the-modern-language-surface/examples/ClientSideFilter/ClientSideFilter.csproj" />
+    <Project Path="modules/04-linq-and-the-modern-language-surface/examples/DeferredCapture/DeferredCapture.csproj" />
+    <Project Path="modules/04-linq-and-the-modern-language-surface/examples/DoubleEnumeration/DoubleEnumeration.csproj" />
+  </Folder>
   <Folder Name="/modules/04-linq-and-the-modern-language-surface/src/">
     <Project Path="modules/04-linq-and-the-modern-language-surface/src/Exercises/Exercises.csproj" />
     <Project Path="modules/04-linq-and-the-modern-language-surface/src/Solutions/Solutions.csproj" />
   </Folder>
   <Folder Name="/modules/04-linq-and-the-modern-language-surface/tests/">
     <Project Path="modules/04-linq-and-the-modern-language-surface/tests/UnitTests/UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/modules/05-host-configuration-and-options/" />
+  <Folder Name="/modules/05-host-configuration-and-options/examples/">
+    <Project Path="modules/05-host-configuration-and-options/examples/FailFastOrFailLater/FailFastOrFailLater.csproj" />
+    <Project Path="modules/05-host-configuration-and-options/examples/LayerPrecedence/LayerPrecedence.csproj" />
+    <Project Path="modules/05-host-configuration-and-options/examples/StaleFlag/StaleFlag.csproj" />
+  </Folder>
+  <Folder Name="/modules/05-host-configuration-and-options/src/">
+    <Project Path="modules/05-host-configuration-and-options/src/Exercises/Exercises.csproj" />
+    <Project Path="modules/05-host-configuration-and-options/src/Solutions/Solutions.csproj" />
+  </Folder>
+  <Folder Name="/modules/05-host-configuration-and-options/tests/">
+    <Project Path="modules/05-host-configuration-and-options/tests/UnitTests/UnitTests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
