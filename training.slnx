@@ -1,6 +1,11 @@
 <Solution>
   <Folder Name="/modules/" />
   <Folder Name="/modules/01-type-system-and-memory/" />
+  <Folder Name="/modules/01-type-system-and-memory/examples/">
+    <Project Path="modules/01-type-system-and-memory/examples/BasketBug/BasketBug.csproj" />
+    <Project Path="modules/01-type-system-and-memory/examples/BoxingCosts/BoxingCosts.csproj" />
+    <Project Path="modules/01-type-system-and-memory/examples/EqualitySurprises/EqualitySurprises.csproj" />
+  </Folder>
   <Folder Name="/modules/01-type-system-and-memory/src/">
     <Project Path="modules/01-type-system-and-memory/src/Exercises/Exercises.csproj" />
     <Project Path="modules/01-type-system-and-memory/src/Solutions/Solutions.csproj" />
