@@ -219,5 +219,55 @@ public sealed class ApiSurfaceCheckerTests : IDisposable
         ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
     }
 
+    [Fact]
+    public void An_expression_bodied_property_matches_a_get_only_auto_property()
+    {
+        // `Start => throw ...` in a stub and `Start { get; }` in the solution are
+        // the same public surface. A stub cannot use an auto-property when its
+        // constructor has no body to assign it in, so this pairing is the normal
+        // shape of a read-only value on a struct, not an edge case.
+        WriteSource("Exercises", "Window.cs", """
+            namespace Training.Demo.Core;
+
+            public readonly struct Window
+            {
+                public int Start => throw new NotImplementedException();
+            }
+            """);
+        WriteSource("Solutions", "Window.cs", """
+            namespace Training.Demo.Core;
+
+            public readonly struct Window
+            {
+                public int Start { get; }
+            }
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void A_settable_property_still_differs_from_an_expression_bodied_one()
+    {
+        WriteSource("Exercises", "Window.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Window
+            {
+                public int Start => throw new NotImplementedException();
+            }
+            """);
+        WriteSource("Solutions", "Window.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Window
+            {
+                public int Start { get; set; }
+            }
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldNotBeEmpty();
+    }
+
     public void Dispose() => Directory.Delete(_root, recursive: true);
 }

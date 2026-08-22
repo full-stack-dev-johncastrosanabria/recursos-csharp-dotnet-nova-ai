@@ -10,5 +10,14 @@ if [[ -n "$staged_cs" ]]; then
   dotnet format --verify-no-changes --include $staged_cs
 fi
 
+# Structural invariants only. These must hold at every commit: a test with no
+# stub, or a stub whose signature has drifted from its solution, is broken the
+# moment it is written.
+#
+# Guide anatomy is deliberately NOT here. A module is built over several
+# commits and its GUIDE.md is written last, so a full audit would make every
+# intermediate commit impossible. CI runs `audit all` on every pull request,
+# which is where completeness is the right question to ask.
 echo "pre-commit: checking repository invariants"
-dotnet run --project tools/Training.Audit -- all
+dotnet run --project tools/Training.Audit -- pairs
+dotnet run --project tools/Training.Audit -- api

@@ -184,9 +184,16 @@ public static class ApiSurfaceChecker
         return modifiers.Length == 0 ? signature : $"{modifiers} {signature}";
     }
 
+    /// <summary>
+    /// A property declaration has either an accessor list or an expression body.
+    /// An expression body -- `public int Start => ...` -- is a get-only property,
+    /// so it must render identically to `public int Start { get; }`. Stubs reach
+    /// for the expression form because a throwing constructor has no body in
+    /// which to assign an auto-property's backing field.
+    /// </summary>
     private static string Accessors(AccessorListSyntax? accessors)
         => accessors is null
-            ? string.Empty
+            ? "get;"
             : string.Join(" ", accessors.Accessors.Select(a => a.Keyword.Text + ";"));
 
     /// <summary>Canonical text for a syntax fragment, independent of how the source wrapped it.</summary>
