@@ -220,5 +220,24 @@ public static class ApiSurfaceChecker
 
     /// <summary>Canonical text for a syntax fragment, independent of how the source wrapped it.</summary>
     private static string Render(SyntaxNode? node)
-        => node is null ? string.Empty : node.NormalizeWhitespace().ToFullString();
+        => node is null
+            ? string.Empty
+            : AttributeStripper.Instance.Visit(node)!.NormalizeWhitespace().ToFullString();
+
+    /// <summary>
+    /// Removes attribute lists before a node is rendered.
+    ///
+    /// An attribute on a parameter -- [FromKeyedServices], [EnumeratorCancellation]
+    /// and friends -- changes how something is resolved or generated, but not the
+    /// signature a caller writes. This check exists to prove the stub and the
+    /// solution present the same surface to the same tests, and an attribute does
+    /// not affect that. Comparing them would also force every stub to carry the
+    /// attribute its solution needs, which hands the learner the answer.
+    /// </summary>
+    private sealed class AttributeStripper : CSharpSyntaxRewriter
+    {
+        public static readonly AttributeStripper Instance = new();
+
+        public override SyntaxNode? VisitAttributeList(AttributeListSyntax node) => null;
+    }
 }
