@@ -66,4 +66,6 @@ markdown_extensions:
 nav:
   - Home: README.md
   - Start here: START-HERE.md
+  - Runtime and language semantics:
+      - 01 · Type system and memory model: modules/01-type-system-and-memory/GUIDE.md
   - Contributing: CONTRIBUTING.md
