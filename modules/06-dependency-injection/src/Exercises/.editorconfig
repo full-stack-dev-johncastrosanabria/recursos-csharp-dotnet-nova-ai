@@ -1,0 +1,12 @@
+# Scoped relaxation for exercise stubs ONLY. Do not copy this elsewhere.
+#
+# Each rule below fires purely because the method body is
+# `throw new NotImplementedException()`. Once the learner implements the
+# method, the rule applies again on its own. Solutions, examples, tools
+# and system checkpoints are held to the full ruleset.
+
+[*.cs]
+dotnet_diagnostic.IDE0060.severity = none   # unused parameter: nothing consumes it yet
+dotnet_diagnostic.CA1801.severity = none    # unused parameter, from the analyzer package
+dotnet_diagnostic.CA1822.severity = none    # could be static: never touches `this` yet
+dotnet_diagnostic.CS1998.severity = none    # async without await: the body only throws

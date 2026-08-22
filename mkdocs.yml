@@ -73,4 +73,5 @@ nav:
       - 04 · LINQ and the modern language surface: modules/04-linq-and-the-modern-language-surface/GUIDE.md
   - Framework and platform:
       - 05 · Host configuration and options: modules/05-host-configuration-and-options/GUIDE.md
+      - 06 · Dependency injection: modules/06-dependency-injection/GUIDE.md
   - Contributing: CONTRIBUTING.md

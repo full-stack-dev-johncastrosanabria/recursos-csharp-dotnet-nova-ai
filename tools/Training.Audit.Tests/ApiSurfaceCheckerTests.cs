@@ -341,5 +341,39 @@ public sealed class ApiSurfaceCheckerTests : IDisposable
         ApiSurfaceChecker.Run(_root).ShouldNotBeEmpty();
     }
 
+    [Fact]
+    public void An_attribute_on_a_parameter_is_not_part_of_the_surface()
+    {
+        // Attributes like [FromKeyedServices] change how a container resolves a
+        // parameter, but not the signature a caller writes -- and requiring the
+        // stub to carry one would hand the learner the answer. What the check
+        // exists to protect is that the same tests compile and run against both
+        // sides, and an attribute does not affect that.
+        WriteSource("Exercises", "Router.cs", """
+            namespace Training.Demo.Core;
+
+            public sealed class Router
+            {
+                public Router(string gateway) => Gateway = gateway;
+
+                public string Gateway { get; }
+            }
+            """);
+        WriteSource("Solutions", "Router.cs", """
+            using System;
+
+            namespace Training.Demo.Core;
+
+            public sealed class Router
+            {
+                public Router([Obsolete] string gateway) => Gateway = gateway;
+
+                public string Gateway { get; }
+            }
+            """);
+
+        ApiSurfaceChecker.Run(_root).ShouldBeEmpty();
+    }
+
     public void Dispose() => Directory.Delete(_root, recursive: true);
 }
