@@ -69,4 +69,5 @@ nav:
   - Runtime and language semantics:
       - 01 · Type system and memory model: modules/01-type-system-and-memory/GUIDE.md
       - 02 · Object lifetime, GC and disposal: modules/02-object-lifetime-gc-and-disposal/GUIDE.md
+      - 03 · Async, await and the thread pool: modules/03-async-await-and-the-thread-pool/GUIDE.md
   - Contributing: CONTRIBUTING.md

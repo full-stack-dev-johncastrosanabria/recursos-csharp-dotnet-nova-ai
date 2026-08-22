@@ -26,6 +26,19 @@
   <Folder Name="/modules/02-object-lifetime-gc-and-disposal/tests/">
     <Project Path="modules/02-object-lifetime-gc-and-disposal/tests/UnitTests/UnitTests.csproj" />
   </Folder>
+  <Folder Name="/modules/03-async-await-and-the-thread-pool/" />
+  <Folder Name="/modules/03-async-await-and-the-thread-pool/examples/">
+    <Project Path="modules/03-async-await-and-the-thread-pool/examples/LostException/LostException.csproj" />
+    <Project Path="modules/03-async-await-and-the-thread-pool/examples/StarvedPool/StarvedPool.csproj" />
+    <Project Path="modules/03-async-await-and-the-thread-pool/examples/WhenAllVersusSequential/WhenAllVersusSequential.csproj" />
+  </Folder>
+  <Folder Name="/modules/03-async-await-and-the-thread-pool/src/">
+    <Project Path="modules/03-async-await-and-the-thread-pool/src/Exercises/Exercises.csproj" />
+    <Project Path="modules/03-async-await-and-the-thread-pool/src/Solutions/Solutions.csproj" />
+  </Folder>
+  <Folder Name="/modules/03-async-await-and-the-thread-pool/tests/">
+    <Project Path="modules/03-async-await-and-the-thread-pool/tests/UnitTests/UnitTests.csproj" />
+  </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
     <Project Path="tools/Training.Audit/Training.Audit.csproj" />
