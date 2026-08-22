@@ -74,4 +74,5 @@ nav:
   - Framework and platform:
       - 05 · Host configuration and options: modules/05-host-configuration-and-options/GUIDE.md
       - 06 · Dependency injection: modules/06-dependency-injection/GUIDE.md
+      - 07 · The middleware pipeline: modules/07-the-middleware-pipeline/GUIDE.md
   - Contributing: CONTRIBUTING.md
