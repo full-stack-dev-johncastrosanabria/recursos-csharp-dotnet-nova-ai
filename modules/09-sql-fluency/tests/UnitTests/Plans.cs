@@ -36,6 +36,25 @@ public static class Plans
     /// <summary>A join, for walking a plan with more than one branch.</summary>
     public const string HashJoin = "hash-join-with-filter";
 
+    /// <summary>SQL Server: LOWER(customer_email) -- an index scan, 341 logical reads.</summary>
+    public const string SqlServerFunctionWrapped = "mssql-scan-function-wrapped";
+
+    /// <summary>SQL Server: the same lookup against the bare column -- a seek, 3 reads.</summary>
+    public const string SqlServerDirect = "mssql-seek-direct";
+
+    /// <summary>SQL Server: CAST(placed_at AS date), which it rewrites into a seek.</summary>
+    public const string SqlServerCastToDate = "mssql-seek-cast-to-date";
+
+    /// <summary>SQL Server: YEAR(placed_at), which it does not rewrite.</summary>
+    public const string SqlServerYearFunction = "mssql-scan-year-function";
+
+    /// <summary>SQL Server: a predicate with no index at all, carrying a missing-index hint.</summary>
+    public const string SqlServerMissingIndex = "mssql-missing-index-hint";
+
     public static string Load(string name)
         => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "plans", name + ".json"));
+
+    /// <summary>SQL Server plans are XML, not JSON -- see the guide's section 9.</summary>
+    public static string LoadXml(string name)
+        => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "plans", name + ".xml"));
 }

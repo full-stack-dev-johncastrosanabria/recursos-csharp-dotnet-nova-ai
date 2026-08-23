@@ -1,0 +1,90 @@
+<ShowPlanXML xmlns="http://schemas.microsoft.com/sqlserver/2004/07/showplan" Version="1.557" Build="15.0.2000.1574">
+  <BatchSequence>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementText="SELECT [id] FROM [dbo].[orders] WHERE [customer_email]=@1" StatementId="1" StatementCompId="1" StatementType="SELECT" RetrievedFromCache="true" StatementSubTreeCost="0.0032864" StatementEstRows="4" SecurityPolicyApplied="false" StatementOptmLevel="TRIVIAL" QueryHash="0x1981846AF869EF33" QueryPlanHash="0xBDBDACF81AF27BBF" CardinalityEstimationModelVersion="150">
+          <StatementSetOptions QUOTED_IDENTIFIER="true" ARITHABORT="false" CONCAT_NULL_YIELDS_NULL="true" ANSI_NULLS="true" ANSI_PADDING="true" ANSI_WARNINGS="true" NUMERIC_ROUNDABORT="false"></StatementSetOptions>
+          <QueryPlan DegreeOfParallelism="1" CachedPlanSize="24" CompileTime="0" CompileCPU="0" CompileMemory="176">
+            <MemoryGrantInfo SerialRequiredMemory="0" SerialDesiredMemory="0" GrantedMemory="0" MaxUsedMemory="0"></MemoryGrantInfo>
+            <OptimizerHardwareDependentProperties EstimatedAvailableMemoryGrant="162534" EstimatedPagesCached="40633" EstimatedAvailableDegreeOfParallelism="2" MaxCompileMemory="4292120"></OptimizerHardwareDependentProperties>
+            <OptimizerStatsUsage>
+              <StatisticsInfo LastUpdate="2026-08-23T01:19:01.75" ModificationCount="0" SamplingPercent="100" Statistics="[orders_customer_email_idx]" Table="[orders]" Schema="[dbo]" Database="[master]"></StatisticsInfo>
+            </OptimizerStatsUsage>
+            <TraceFlags IsCompileTime="1">
+              <TraceFlag Value="822" Scope="Global"></TraceFlag>
+              <TraceFlag Value="833" Scope="Global"></TraceFlag>
+              <TraceFlag Value="835" Scope="Global"></TraceFlag>
+              <TraceFlag Value="851" Scope="Global"></TraceFlag>
+              <TraceFlag Value="3425" Scope="Global"></TraceFlag>
+              <TraceFlag Value="5504" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8052" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8076" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8904" Scope="Global"></TraceFlag>
+              <TraceFlag Value="9038" Scope="Global"></TraceFlag>
+            </TraceFlags>
+            <TraceFlags IsCompileTime="0">
+              <TraceFlag Value="822" Scope="Global"></TraceFlag>
+              <TraceFlag Value="833" Scope="Global"></TraceFlag>
+              <TraceFlag Value="835" Scope="Global"></TraceFlag>
+              <TraceFlag Value="851" Scope="Global"></TraceFlag>
+              <TraceFlag Value="3425" Scope="Global"></TraceFlag>
+              <TraceFlag Value="5504" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8052" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8076" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8904" Scope="Global"></TraceFlag>
+              <TraceFlag Value="9038" Scope="Global"></TraceFlag>
+            </TraceFlags>
+            <QueryTimeStats ElapsedTime="0" CpuTime="0"></QueryTimeStats>
+            <RelOp NodeId="0" PhysicalOp="Index Seek" LogicalOp="Index Seek" EstimateRows="4" EstimatedRowsRead="4" EstimateIO="0.003125" EstimateCPU="0.0001614" AvgRowSize="11" EstimatedTotalSubtreeCost="0.0032864" TableCardinality="50000" Parallel="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row">
+              <OutputList>
+                <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="id"></ColumnReference>
+              </OutputList>
+              <RunTimeInformation>
+                <RunTimeCountersPerThread Thread="0" ActualRows="4" Batches="0" ActualElapsedms="0" ActualCPUms="0" ActualScans="1" ActualLogicalReads="3" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" ActualRowsRead="4" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row"></RunTimeCountersPerThread>
+              </RunTimeInformation>
+              <IndexScan Ordered="1" ScanDirection="FORWARD" ForcedIndex="0" ForceSeek="0" ForceScan="0" NoExpandHint="0" Storage="RowStore">
+                <DefinedValues>
+                  <DefinedValue>
+                    <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="id"></ColumnReference>
+                  </DefinedValue>
+                </DefinedValues>
+                <Object Database="[master]" Schema="[dbo]" Table="[orders]" Index="[orders_customer_email_idx]" IndexKind="NonClustered" Storage="RowStore"></Object>
+                <SeekPredicates>
+                  <SeekPredicateNew>
+                    <SeekKeys>
+                      <Prefix ScanType="EQ">
+                        <RangeColumns>
+                          <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="customer_email"></ColumnReference>
+                        </RangeColumns>
+                        <RangeExpressions>
+                          <ScalarOperator ScalarString="CONVERT_IMPLICIT(nvarchar(4000),[@1],0)">
+                            <Identifier>
+                              <ColumnReference Column="ConstExpr1002">
+                                <ScalarOperator>
+                                  <Convert DataType="nvarchar" Length="8000" Style="0" Implicit="1">
+                                    <ScalarOperator>
+                                      <Identifier>
+                                        <ColumnReference Column="@1"></ColumnReference>
+                                      </Identifier>
+                                    </ScalarOperator>
+                                  </Convert>
+                                </ScalarOperator>
+                              </ColumnReference>
+                            </Identifier>
+                          </ScalarOperator>
+                        </RangeExpressions>
+                      </Prefix>
+                    </SeekKeys>
+                  </SeekPredicateNew>
+                </SeekPredicates>
+              </IndexScan>
+            </RelOp>
+            <ParameterList>
+              <ColumnReference Column="@1" ParameterDataType="varchar(8000)" ParameterCompiledValue="'User123@Example.com'" ParameterRuntimeValue="'User123@Example.com'"></ColumnReference>
+            </ParameterList>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+  </BatchSequence>
+</ShowPlanXML>

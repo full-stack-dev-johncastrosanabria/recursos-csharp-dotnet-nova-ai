@@ -106,6 +106,7 @@
   </Folder>
   <Folder Name="/modules/09-sql-fluency/" />
   <Folder Name="/modules/09-sql-fluency/examples/">
+    <Project Path="modules/09-sql-fluency/examples/EngineDisagreement/EngineDisagreement.csproj" />
     <Project Path="modules/09-sql-fluency/examples/PerLoopNumbers/PerLoopNumbers.csproj" />
     <Project Path="modules/09-sql-fluency/examples/PlannerBlindSpot/PlannerBlindSpot.csproj" />
     <Project Path="modules/09-sql-fluency/examples/WholeTableForFourRows/WholeTableForFourRows.csproj" />

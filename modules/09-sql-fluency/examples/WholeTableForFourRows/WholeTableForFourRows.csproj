@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildProjectDirectory)/../../plans/*.json"
+    <Content Include="$(MSBuildProjectDirectory)/../../plans/*.*"
              Link="plans/%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
