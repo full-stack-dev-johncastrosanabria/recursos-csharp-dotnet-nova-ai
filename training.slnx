@@ -91,6 +91,19 @@
   <Folder Name="/modules/07-the-middleware-pipeline/tests/">
     <Project Path="modules/07-the-middleware-pipeline/tests/UnitTests/UnitTests.csproj" />
   </Folder>
+  <Folder Name="/modules/08-the-http-surface/" />
+  <Folder Name="/modules/08-the-http-surface/examples/">
+    <Project Path="modules/08-the-http-surface/examples/HandlerChain/HandlerChain.csproj" />
+    <Project Path="modules/08-the-http-surface/examples/SocketChurn/SocketChurn.csproj" />
+    <Project Path="modules/08-the-http-surface/examples/TimeoutOrCancel/TimeoutOrCancel.csproj" />
+  </Folder>
+  <Folder Name="/modules/08-the-http-surface/src/">
+    <Project Path="modules/08-the-http-surface/src/Exercises/Exercises.csproj" />
+    <Project Path="modules/08-the-http-surface/src/Solutions/Solutions.csproj" />
+  </Folder>
+  <Folder Name="/modules/08-the-http-surface/tests/">
+    <Project Path="modules/08-the-http-surface/tests/UnitTests/UnitTests.csproj" />
+  </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/Training.Audit.Tests/Training.Audit.Tests.csproj" />
     <Project Path="tools/Training.Audit/Training.Audit.csproj" />
