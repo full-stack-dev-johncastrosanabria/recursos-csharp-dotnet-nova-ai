@@ -79,4 +79,5 @@ nav:
   - Data and persistence:
       - 09 · SQL fluency: modules/09-sql-fluency/GUIDE.md
       - 10 · Transactions and concurrency: modules/10-transactions-and-concurrency/GUIDE.md
+      - 11 · EF Core internals: modules/11-ef-core-internals/GUIDE.md
   - Contributing: CONTRIBUTING.md
