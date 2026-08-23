@@ -1,0 +1,48 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Gather",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Startup Cost": 1000.00,
+      "Total Cost": 4926.71,
+      "Plan Rows": 1000,
+      "Plan Width": 12,
+      "Actual Startup Time": 0.275,
+      "Actual Total Time": 31.052,
+      "Actual Rows": 4.00,
+      "Actual Loops": 1,
+      "Disabled": false,
+      "Workers Planned": 1,
+      "Workers Launched": 1,
+      "Single Copy": false,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": true,
+          "Async Capable": false,
+          "Relation Name": "orders",
+          "Alias": "orders",
+          "Startup Cost": 0.00,
+          "Total Cost": 3826.71,
+          "Plan Rows": 588,
+          "Plan Width": 12,
+          "Actual Startup Time": 3.239,
+          "Actual Total Time": 28.671,
+          "Actual Rows": 2.00,
+          "Actual Loops": 2,
+          "Disabled": false,
+          "Filter": "(lower(customer_email) = 'user123@example.com'::text)",
+          "Rows Removed by Filter": 99998,
+          "Workers": [
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.384,
+    "Triggers": [
+    ],
+    "Execution Time": 31.125
+  }
+]
