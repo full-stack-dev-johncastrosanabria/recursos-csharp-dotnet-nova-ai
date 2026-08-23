@@ -18,6 +18,10 @@ jobs:
         with:
           args: >-
             --no-progress
+            --max-concurrency 4
+            --retry-wait-time 10
+            --max-retries 3
+            --accept 200,429
             --exclude-path .superpowers
             --exclude-path site
             --exclude-path artifacts

@@ -431,5 +431,5 @@ broker, where the retry is somebody else's.
 - [PostgreSQL Error Codes](https://www.postgresql.org/docs/18/errcodes-appendix.html) — the full SQLSTATE table; class 40 and class 23 are the two to know.
 - [Routine Vacuuming](https://www.postgresql.org/docs/18/routine-vacuuming.html) — why one long transaction bloats tables it never touched.
 - [`System.Data.IsolationLevel`](https://learn.microsoft.com/en-us/dotnet/api/system.data.isolationlevel) — what the .NET enum means, and that asking is not the same as getting.
-- [Npgsql transactions](https://www.npgsql.org/doc/transactions.html) — how the driver maps .NET transactions onto PostgreSQL's, and what it does not do for you.
+- [`NpgsqlTransaction`](https://www.npgsql.org/doc/api/Npgsql.NpgsqlTransaction.html) — how the driver maps .NET transactions onto PostgreSQL's, including which isolation levels it will actually send.
 - [Testcontainers for .NET](https://dotnet.testcontainers.org/) — how the integration tier starts a real database per run.
