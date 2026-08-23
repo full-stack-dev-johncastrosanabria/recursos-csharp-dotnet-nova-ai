@@ -1,0 +1,48 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Bitmap Heap Scan",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Relation Name": "orders",
+      "Alias": "orders",
+      "Startup Cost": 4.45,
+      "Total Cost": 19.98,
+      "Plan Rows": 4,
+      "Plan Width": 12,
+      "Actual Startup Time": 0.040,
+      "Actual Total Time": 0.055,
+      "Actual Rows": 4.00,
+      "Actual Loops": 1,
+      "Disabled": false,
+      "Recheck Cond": "(lower(customer_email) = 'user123@example.com'::text)",
+      "Rows Removed by Index Recheck": 0,
+      "Exact Heap Blocks": 4,
+      "Lossy Heap Blocks": 0,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Index Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Index Name": "orders_lower_email_idx",
+          "Startup Cost": 0.00,
+          "Total Cost": 4.45,
+          "Plan Rows": 4,
+          "Plan Width": 0,
+          "Actual Startup Time": 0.029,
+          "Actual Total Time": 0.029,
+          "Actual Rows": 4.00,
+          "Actual Loops": 1,
+          "Disabled": false,
+          "Index Cond": "(lower(customer_email) = 'user123@example.com'::text)",
+          "Index Searches": 1
+        }
+      ]
+    },
+    "Planning Time": 0.270,
+    "Triggers": [
+    ],
+    "Execution Time": 0.091
+  }
+]
