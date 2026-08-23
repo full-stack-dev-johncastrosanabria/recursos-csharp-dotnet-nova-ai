@@ -18,8 +18,11 @@ Every module's `GUIDE.md` has the same eight sections, in the same order.
    use the thing it covers and when not to.
 4. **Real-world case** — a specific, reproducible failure caused by not
    understanding this module, with a derived cost. See "The voice" below.
-5. **Exercises** — 5–8, split Core / Challenge, each tied to a test you can
-   run.
+5. **Exercises** — 5–10, split Core / Challenge, each tied to a test you can
+   run. Eight is the usual ceiling. Go past it only where a module genuinely
+   covers two subjects rather than one: module 09 carries ten because it
+   teaches query plans on two database engines, and the extra two exist to
+   make the difference between them concrete.
 6. **Summary**.
 7. **Review questions**.
 8. **Resources** — verified links, each with one line on why it's worth the
@@ -67,9 +70,23 @@ already written. If you need to regenerate a module, delete its directory
 first.
 
 Nine modules also need an integration project (`tests/IntegrationTests`,
-Testcontainers against PostgreSQL) — the scaffolder does not generate that
-tier; add it by hand, following the pattern of another integration module,
+Testcontainers) — the scaffolder does not generate that tier; add it by hand
 and mark its tests `[Trait("Category", "Integration")]`.
+`modules/09-sql-fluency/tests/IntegrationTests` is the reference to copy. Four
+things in it are not obvious the first time:
+
+- One container per **collection fixture**, not per class fixture, or every
+  test class starts its own database. Classes in a collection run in sequence,
+  which also makes it safe for a test to create an index and drop it again.
+- Name each integration test file after the exercise it exercises. The pair
+  check maps every `*Tests.cs` under `tests/` onto `src/Exercises` and
+  `src/Solutions`, and it does not care which tier the file is in.
+- The default readiness probes shell out to a client that may not be in the
+  image — `azure-sql-edge` ships without `sqlcmd`. Override the wait strategy
+  and then poll for a connection that actually opens; an open port is not a
+  ready database.
+- `Microsoft.Data.SqlClient` refuses to run under `InvariantGlobalization`,
+  which this repo turns on globally. Override it in that project only.
 
 ## Running the audit locally
 

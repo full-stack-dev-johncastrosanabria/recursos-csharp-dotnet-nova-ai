@@ -9,11 +9,16 @@ the provider cannot translate, evaluated client-side — and module 11 will join
 the two properly.
 
 You need Docker only for the integration tier. Everything else runs against
-plans captured from a real PostgreSQL 18 and committed to
+plans captured from a real PostgreSQL 18 and a real SQL Server, committed to
 `modules/09-sql-fluency/plans`, so the reasoning is available to everyone and
 the verification is available to whoever can run a container. Be clear about
 which is which: reading a captured plan teaches you to read plans, and only the
 integration tier proves the rules hold against a live planner.
+
+Both engines are here on purpose. The principles are identical and the details
+are not, and the exercises are built so you meet a case where the two disagree
+— which is where an engineer arriving from the other database is most
+confidently wrong.
 
 Budget four hours, and expect the second half to be the slow part. Reading a
 plan is mechanical once somebody shows you the three numbers that matter.
@@ -37,6 +42,8 @@ By the end of this module you can:
 - Multiply by the loop count, and recognise an N+1 query in a plan.
 - Use the planner's row estimates to explain a plan that otherwise makes no sense.
 - Choose between rewriting a query, adding an index, and doing nothing.
+- Read a SQL Server showplan, and tune against logical reads rather than the clock.
+- Say which of your SQL rules of thumb travel between engines and which do not.
 - Run `EXPLAIN ANALYZE` safely, including against statements that write.
 
 ## Sections
@@ -246,6 +253,76 @@ read and whether they came from cache, which separates "this query is slow" from
 "this query is slow when it misses cache". `VERBOSE` adds output columns and
 schema-qualified names.
 
+### 9. The same ideas on SQL Server
+
+Everything so far transfers. Only the packaging changes, and it is worth
+learning both because most engineers will meet both.
+
+The vocabulary is the first difference. PostgreSQL says `Seq Scan` and
+`Index Scan`; SQL Server says **scan** and **seek**, and the distinction is
+sharper. A *seek* navigates the B-tree to a position and reads from there — the
+logarithmic operation section 1 described. A *scan* reads the whole structure,
+and an `Index Scan` is still a scan: it reads every entry of the index rather
+than every row of the table, which is cheaper but still linear. Seeing "Index
+Scan" and concluding the index is working is a common and expensive misreading.
+
+The currency is the second difference, and it is an improvement.
+PostgreSQL makes you assemble rows examined out of rows returned, rows removed
+and loops. SQL Server reports **logical reads** — pages fetched, from cache or
+from disk — as one number per table, and it is the number to tune against for
+the same reason this module asserts on rows rather than milliseconds: it does
+not move with cache warmth, load, or hardware. `SET STATISTICS IO ON` prints it
+per query, and it is the single most useful thing to switch on.
+
+The format is the third. `SET STATISTICS XML ON` returns the actual plan as XML
+in an extra result set, with `RelOp` elements carrying `PhysicalOp` and
+`EstimateRows`, and `RunTimeCountersPerThread` carrying `ActualRows` and
+`ActualLogicalReads` — one element per thread, so sum them. Exercise 6 reads it,
+and the captured SQL Server plans show the same story as the PostgreSQL ones:
+341 logical reads to find four rows, against 3.
+
+Two SQL Server specifics worth knowing. `SET SHOWPLAN_XML ON` gives the
+*estimated* plan without running the query, which is how you inspect a
+statement too expensive or too destructive to execute — and it must be the only
+statement in its batch. And when you cannot attach to the session at all,
+`sys.dm_exec_query_stats` joined to `sys.dm_exec_query_plan` gives you the
+cached plan and its accumulated statistics, which is how tuning actually
+happens in production.
+
+### 10. Where the engines disagree
+
+Here is the case the module is built around, and it reverses an answer you were
+about to carry between jobs.
+
+Section 2 said a cast on the column is not sargable. On PostgreSQL that is
+simply true: `placed_at::date = $1` reads the whole table. On SQL Server,
+`CAST(placed_at AS date) = @d` **seeks**. The optimiser knows that casting a
+`datetime2` to `date` preserves order, so it rewrites the predicate into a range
+over the raw column and seeks that. The plan admits it — a `Constant Scan`
+feeding a `Nested Loops` feeding an `Index Seek` is the optimiser building the
+range itself.
+
+```bash
+dotnet run --project modules/09-sql-fluency/examples/EngineDisagreement
+```
+
+Do not over-learn that. `YEAR(placed_at) = 2025` is a scan on SQL Server too,
+because a year does not preserve enough order to rewrite into a single range
+without the optimiser inventing one. The rule that travels is the physical one
+from section 1: an index holds the column's values, so it cannot answer
+questions about something computed from them. Every exception is a fact about
+one optimiser's rewrite rules, and exceptions do not travel. Exercise 10 encodes
+exactly that split, and the integration tier asserts both halves against the
+live engine.
+
+SQL Server also offers something PostgreSQL has no equivalent for: **missing
+index hints**. When the optimiser cannot find a useful index it records the one
+it wishes existed, right there in the plan, and exercise 6 reads it out. Treat
+it as a symptom rather than a prescription. The hint is generated for one query
+in isolation; it does not know what other indexes exist, what your write load
+is, or that three of its suggestions could be one composite index. It tells you
+where to look, and you still make the decision from section 7.
+
 ## Real-world case
 
 **The mechanism.** A support tool looks up a customer's orders. Emails are
@@ -301,8 +378,8 @@ dotnet run --project modules/09-sql-fluency/examples/WholeTableForFourRows
 
 ## Exercises
 
-All eight live in `modules/09-sql-fluency`. Run the whole module with
-`./run.sh test 09` — all 58 tests fail until you implement the stubs in
+All ten live in `modules/09-sql-fluency`. Run the whole module with
+`./run.sh test 09` — all 74 tests fail until you implement the stubs in
 `src/Exercises`. Work one class at a time with `--filter-class`.
 
 **Core**
@@ -317,19 +394,25 @@ All eight live in `modules/09-sql-fluency`. Run the whole module with
    `dotnet test --project modules/09-sql-fluency/tests/UnitTests --filter-class "*LoopAmplificationTests"`
 5. **`Sargability`** — the real-world case as a rule you can apply by eye.
    `dotnet test --project modules/09-sql-fluency/tests/UnitTests --filter-class "*SargabilityTests"`
+6. **`Showplan`** — the same ideas in SQL Server's XML, counted in logical reads.
+   `dotnet test --project modules/09-sql-fluency/tests/UnitTests --filter-class "*ShowplanTests"`
 
 **Challenge**
 
-6. **`PlanDiff`** — prove a change helped, by rows read rather than by the clock.
+7. **`PlanDiff`** — prove a change helped, by rows read rather than by the clock.
    `dotnet test --project modules/09-sql-fluency/tests/UnitTests --filter-class "*PlanDiffTests"`
-7. **`IndexAdvice`** — turn a verdict into a decision, including "do nothing".
+8. **`IndexAdvice`** — turn a verdict into a decision, including "do nothing".
    `dotnet test --project modules/09-sql-fluency/tests/UnitTests --filter-class "*IndexAdviceTests"`
-8. **`PlanReport`** — the capstone: read a plan the way you would in review.
+9. **`PlanReport`** — the capstone: read a plan the way you would in review.
    `dotnet test --project modules/09-sql-fluency/tests/UnitTests --filter-class "*PlanReportTests"`
+10. **`EngineSargability`** — which rules travel between engines, and which do not.
+   `dotnet test --project modules/09-sql-fluency/tests/UnitTests --filter-class "*EngineSargabilityTests"`
 
-There is also an integration tier: 13 tests that start a real PostgreSQL 18 in a
-container, generate plans against it, and run your analyser over output it has
-never seen. It needs Docker, and it is where the rules stop being claims.
+There is also an integration tier: 20 tests that start a real PostgreSQL 18 and
+a real SQL Server in containers, generate plans against them, and run your
+analyser over output it has never seen. It needs Docker, and it is where the
+rules stop being claims — including the one in section 10, where the two engines
+answer the same predicate differently.
 
 ```bash
 dotnet test --project modules/09-sql-fluency/tests/IntegrationTests
@@ -417,7 +500,24 @@ Wrap it in `BEGIN` … `ROLLBACK`.
 
 <details><summary>Answer</summary>
 Timings move with cache warmth, load and hardware. Rows read is the quantity
-that scales with the table, and it is what will still be true next year.
+that scales with the table, and it is what will still be true next year. On SQL
+Server the same argument makes logical reads the right number.
+</details>
+
+**9. A SQL Server plan shows an `Index Scan`. Is the index working?**
+
+<details><summary>Answer</summary>
+No. A scan reads every entry of the index; only a seek navigates to a position.
+"Index Scan" is a scan that happens to be over an index, and reading it as
+success is a common and expensive mistake.
+</details>
+
+**10. `CAST(placed_at AS date) = @d` — scan or seek?**
+
+<details><summary>Answer</summary>
+It depends on the engine, which is the point. SQL Server rewrites it into a
+range and seeks; PostgreSQL scans. The physical principle travels between
+engines; one optimiser's rewrite rules do not.
 </details>
 
 If any answer above surprised you, this module is not finished with you yet.
@@ -433,3 +533,7 @@ EF Core on top and asks which of these plans your LINQ actually produced.
 - [Partial Indexes](https://www.postgresql.org/docs/18/indexes-partial.html) — the option section 7 deliberately left out; read it next.
 - [Multicolumn Indexes](https://www.postgresql.org/docs/18/indexes-multicolumn.html) — why column order decides which queries an index can serve.
 - [Statistics Used by the Planner](https://www.postgresql.org/docs/18/planner-stats.html) — what `ANALYZE` collects, and what it cannot collect about expressions.
+- [Display and Save Execution Plans](https://learn.microsoft.com/en-us/sql/relational-databases/performance/display-and-save-execution-plans) — SQL Server's estimated and actual plans, and how to get each.
+- [`SET STATISTICS IO`](https://learn.microsoft.com/en-us/sql/t-sql/statements/set-statistics-io-transact-sql) — logical reads, the number section 9 argues you should tune against.
+- [Showplan Logical and Physical Operators](https://learn.microsoft.com/en-us/sql/relational-databases/showplan-logical-and-physical-operators-reference) — every operator name you will meet in the XML, including the seek/scan distinction.
+- [Missing Index feature](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/tune-nonclustered-missing-index-suggestions) — what the hints in section 10 are, and Microsoft's own list of their limitations.

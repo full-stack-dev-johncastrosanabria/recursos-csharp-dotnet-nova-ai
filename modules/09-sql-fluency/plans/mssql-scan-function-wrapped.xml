@@ -1,0 +1,77 @@
+<ShowPlanXML xmlns="http://schemas.microsoft.com/sqlserver/2004/07/showplan" Version="1.557" Build="15.0.2000.1574">
+  <BatchSequence>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementText="SELECT id FROM dbo.orders WHERE LOWER(customer_email) = 'user123@example.com'" StatementId="1" StatementCompId="1" StatementType="SELECT" RetrievedFromCache="true" StatementSubTreeCost="0.31143" StatementEstRows="4" SecurityPolicyApplied="false" StatementOptmLevel="FULL" QueryHash="0xCAF454995BC90C5C" QueryPlanHash="0xB269517113F50194" StatementOptmEarlyAbortReason="GoodEnoughPlanFound" CardinalityEstimationModelVersion="150">
+          <StatementSetOptions QUOTED_IDENTIFIER="true" ARITHABORT="false" CONCAT_NULL_YIELDS_NULL="true" ANSI_NULLS="true" ANSI_PADDING="true" ANSI_WARNINGS="true" NUMERIC_ROUNDABORT="false"></StatementSetOptions>
+          <QueryPlan DegreeOfParallelism="1" CachedPlanSize="16" CompileTime="1" CompileCPU="1" CompileMemory="264">
+            <MemoryGrantInfo SerialRequiredMemory="0" SerialDesiredMemory="0" GrantedMemory="0" MaxUsedMemory="0"></MemoryGrantInfo>
+            <OptimizerHardwareDependentProperties EstimatedAvailableMemoryGrant="162534" EstimatedPagesCached="40633" EstimatedAvailableDegreeOfParallelism="2" MaxCompileMemory="4292120"></OptimizerHardwareDependentProperties>
+            <OptimizerStatsUsage>
+              <StatisticsInfo LastUpdate="2026-08-23T01:19:01.75" ModificationCount="0" SamplingPercent="100" Statistics="[orders_customer_email_idx]" Table="[orders]" Schema="[dbo]" Database="[master]"></StatisticsInfo>
+            </OptimizerStatsUsage>
+            <TraceFlags IsCompileTime="1">
+              <TraceFlag Value="822" Scope="Global"></TraceFlag>
+              <TraceFlag Value="833" Scope="Global"></TraceFlag>
+              <TraceFlag Value="835" Scope="Global"></TraceFlag>
+              <TraceFlag Value="851" Scope="Global"></TraceFlag>
+              <TraceFlag Value="3425" Scope="Global"></TraceFlag>
+              <TraceFlag Value="5504" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8052" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8076" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8904" Scope="Global"></TraceFlag>
+              <TraceFlag Value="9038" Scope="Global"></TraceFlag>
+            </TraceFlags>
+            <TraceFlags IsCompileTime="0">
+              <TraceFlag Value="822" Scope="Global"></TraceFlag>
+              <TraceFlag Value="833" Scope="Global"></TraceFlag>
+              <TraceFlag Value="835" Scope="Global"></TraceFlag>
+              <TraceFlag Value="851" Scope="Global"></TraceFlag>
+              <TraceFlag Value="3425" Scope="Global"></TraceFlag>
+              <TraceFlag Value="5504" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8052" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8076" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8904" Scope="Global"></TraceFlag>
+              <TraceFlag Value="9038" Scope="Global"></TraceFlag>
+            </TraceFlags>
+            <QueryTimeStats ElapsedTime="16" CpuTime="16"></QueryTimeStats>
+            <RelOp NodeId="1" PhysicalOp="Index Scan" LogicalOp="Index Scan" EstimateRows="4" EstimatedRowsRead="50000" EstimateIO="0.251273" EstimateCPU="0.055157" AvgRowSize="55" EstimatedTotalSubtreeCost="0.30643" TableCardinality="50000" Parallel="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row">
+              <OutputList>
+                <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="id"></ColumnReference>
+              </OutputList>
+              <RunTimeInformation>
+                <RunTimeCountersPerThread Thread="0" ActualRows="4" Batches="0" ActualElapsedms="16" ActualCPUms="16" ActualScans="1" ActualLogicalReads="341" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" ActualRowsRead="50000" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row"></RunTimeCountersPerThread>
+              </RunTimeInformation>
+              <IndexScan Ordered="0" ForcedIndex="0" ForceSeek="0" ForceScan="0" NoExpandHint="0" Storage="RowStore">
+                <DefinedValues>
+                  <DefinedValue>
+                    <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="id"></ColumnReference>
+                  </DefinedValue>
+                </DefinedValues>
+                <Object Database="[master]" Schema="[dbo]" Table="[orders]" Index="[orders_customer_email_idx]" IndexKind="NonClustered" Storage="RowStore"></Object>
+                <Predicate>
+                  <ScalarOperator ScalarString="lower([master].[dbo].[orders].[customer_email])=N'user123@example.com'">
+                    <Compare CompareOp="EQ">
+                      <ScalarOperator>
+                        <Intrinsic FunctionName="lower">
+                          <ScalarOperator>
+                            <Identifier>
+                              <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="customer_email"></ColumnReference>
+                            </Identifier>
+                          </ScalarOperator>
+                        </Intrinsic>
+                      </ScalarOperator>
+                      <ScalarOperator>
+                        <Const ConstValue="N'user123@example.com'"></Const>
+                      </ScalarOperator>
+                    </Compare>
+                  </ScalarOperator>
+                </Predicate>
+              </IndexScan>
+            </RelOp>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+  </BatchSequence>
+</ShowPlanXML>

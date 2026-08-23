@@ -4,13 +4,22 @@
     <AssemblyName>Module09.IntegrationTests</AssemblyName>
     <OutputType>Exe</OutputType>
     <IsTrainingTestProject>true</IsTrainingTestProject>
+    <!--
+      The repo builds with InvariantGlobalization on, which Microsoft.Data.SqlClient
+      refuses to run under: it throws "Globalization Invariant Mode is not supported"
+      on the first connection. This tier is the only place that client is used, so
+      the override is scoped to it rather than relaxed repo-wide.
+    -->
+    <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Npgsql" />
+    <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="Testcontainers.PostgreSql" />
   </ItemGroup>
 

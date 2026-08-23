@@ -1,0 +1,91 @@
+<ShowPlanXML xmlns="http://schemas.microsoft.com/sqlserver/2004/07/showplan" Version="1.557" Build="15.0.2000.1574">
+  <BatchSequence>
+    <Batch>
+      <Statements>
+        <StmtSimple StatementText="SELECT [id],[customer_email] FROM [dbo].[orders] WHERE [total_cents]=@1" StatementId="1" StatementCompId="1" StatementType="SELECT" RetrievedFromCache="false" StatementSubTreeCost="0.510875" StatementEstRows="1" SecurityPolicyApplied="false" StatementOptmLevel="FULL" QueryHash="0x3BC00D7EE9256014" QueryPlanHash="0x04CD43D38297F896" StatementOptmEarlyAbortReason="GoodEnoughPlanFound" CardinalityEstimationModelVersion="150">
+          <StatementSetOptions QUOTED_IDENTIFIER="true" ARITHABORT="false" CONCAT_NULL_YIELDS_NULL="true" ANSI_NULLS="true" ANSI_PADDING="true" ANSI_WARNINGS="true" NUMERIC_ROUNDABORT="false"></StatementSetOptions>
+          <QueryPlan DegreeOfParallelism="1" CachedPlanSize="24" CompileTime="1" CompileCPU="1" CompileMemory="152">
+            <MissingIndexes>
+              <MissingIndexGroup Impact="99.2773">
+                <MissingIndex Database="[master]" Schema="[dbo]" Table="[orders]">
+                  <ColumnGroup Usage="EQUALITY">
+                    <Column Name="[total_cents]" ColumnId="5"></Column>
+                  </ColumnGroup>
+                </MissingIndex>
+              </MissingIndexGroup>
+            </MissingIndexes>
+            <MemoryGrantInfo SerialRequiredMemory="0" SerialDesiredMemory="0" GrantedMemory="0" MaxUsedMemory="0"></MemoryGrantInfo>
+            <OptimizerHardwareDependentProperties EstimatedAvailableMemoryGrant="162534" EstimatedPagesCached="40633" EstimatedAvailableDegreeOfParallelism="2" MaxCompileMemory="4281232"></OptimizerHardwareDependentProperties>
+            <OptimizerStatsUsage>
+              <StatisticsInfo LastUpdate="2026-08-23T01:19:01.75" ModificationCount="0" SamplingPercent="100" Statistics="[orders_customer_email_idx]" Table="[orders]" Schema="[dbo]" Database="[master]"></StatisticsInfo>
+              <StatisticsInfo LastUpdate="2026-08-23T01:19:01.78" ModificationCount="0" SamplingPercent="100" Statistics="[orders_placed_at_idx]" Table="[orders]" Schema="[dbo]" Database="[master]"></StatisticsInfo>
+              <StatisticsInfo LastUpdate="2026-08-23T01:19:01.82" ModificationCount="0" SamplingPercent="100" Statistics="[_WA_Sys_00000005_119F9925]" Table="[orders]" Schema="[dbo]" Database="[master]"></StatisticsInfo>
+            </OptimizerStatsUsage>
+            <TraceFlags IsCompileTime="1">
+              <TraceFlag Value="822" Scope="Global"></TraceFlag>
+              <TraceFlag Value="833" Scope="Global"></TraceFlag>
+              <TraceFlag Value="835" Scope="Global"></TraceFlag>
+              <TraceFlag Value="851" Scope="Global"></TraceFlag>
+              <TraceFlag Value="3425" Scope="Global"></TraceFlag>
+              <TraceFlag Value="5504" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8052" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8076" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8904" Scope="Global"></TraceFlag>
+              <TraceFlag Value="9038" Scope="Global"></TraceFlag>
+            </TraceFlags>
+            <TraceFlags IsCompileTime="0">
+              <TraceFlag Value="822" Scope="Global"></TraceFlag>
+              <TraceFlag Value="833" Scope="Global"></TraceFlag>
+              <TraceFlag Value="835" Scope="Global"></TraceFlag>
+              <TraceFlag Value="851" Scope="Global"></TraceFlag>
+              <TraceFlag Value="3425" Scope="Global"></TraceFlag>
+              <TraceFlag Value="5504" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8052" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8076" Scope="Global"></TraceFlag>
+              <TraceFlag Value="8904" Scope="Global"></TraceFlag>
+              <TraceFlag Value="9038" Scope="Global"></TraceFlag>
+            </TraceFlags>
+            <QueryTimeStats ElapsedTime="2" CpuTime="2"></QueryTimeStats>
+            <RelOp NodeId="0" PhysicalOp="Clustered Index Scan" LogicalOp="Clustered Index Scan" EstimateRows="1" EstimatedRowsRead="50000" EstimateIO="0.455718" EstimateCPU="0.055157" AvgRowSize="219" EstimatedTotalSubtreeCost="0.510875" TableCardinality="50000" Parallel="0" EstimateRebinds="0" EstimateRewinds="0" EstimatedExecutionMode="Row">
+              <OutputList>
+                <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="id"></ColumnReference>
+                <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="customer_email"></ColumnReference>
+              </OutputList>
+              <RunTimeInformation>
+                <RunTimeCountersPerThread Thread="0" ActualRows="1" Batches="0" ActualElapsedms="2" ActualCPUms="2" ActualScans="1" ActualLogicalReads="614" ActualPhysicalReads="0" ActualReadAheads="0" ActualLobLogicalReads="0" ActualLobPhysicalReads="0" ActualLobReadAheads="0" ActualRowsRead="50000" ActualEndOfScans="1" ActualExecutions="1" ActualExecutionMode="Row"></RunTimeCountersPerThread>
+              </RunTimeInformation>
+              <IndexScan Ordered="0" ForcedIndex="0" ForceScan="0" NoExpandHint="0" Storage="RowStore">
+                <DefinedValues>
+                  <DefinedValue>
+                    <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="id"></ColumnReference>
+                  </DefinedValue>
+                  <DefinedValue>
+                    <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="customer_email"></ColumnReference>
+                  </DefinedValue>
+                </DefinedValues>
+                <Object Database="[master]" Schema="[dbo]" Table="[orders]" Index="[PK__orders__3213E83FBB139BEF]" IndexKind="Clustered" Storage="RowStore"></Object>
+                <Predicate>
+                  <ScalarOperator ScalarString="[master].[dbo].[orders].[total_cents]=(5000)">
+                    <Compare CompareOp="EQ">
+                      <ScalarOperator>
+                        <Identifier>
+                          <ColumnReference Database="[master]" Schema="[dbo]" Table="[orders]" Column="total_cents"></ColumnReference>
+                        </Identifier>
+                      </ScalarOperator>
+                      <ScalarOperator>
+                        <Const ConstValue="(5000)"></Const>
+                      </ScalarOperator>
+                    </Compare>
+                  </ScalarOperator>
+                </Predicate>
+              </IndexScan>
+            </RelOp>
+            <ParameterList>
+              <ColumnReference Column="@1" ParameterDataType="smallint" ParameterCompiledValue="(5000)" ParameterRuntimeValue="(5000)"></ColumnReference>
+            </ParameterList>
+          </QueryPlan>
+        </StmtSimple>
+      </Statements>
+    </Batch>
+  </BatchSequence>
+</ShowPlanXML>
