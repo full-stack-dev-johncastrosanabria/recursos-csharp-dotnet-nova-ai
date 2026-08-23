@@ -78,4 +78,5 @@ nav:
       - 08 · The HTTP surface: modules/08-the-http-surface/GUIDE.md
   - Data and persistence:
       - 09 · SQL fluency: modules/09-sql-fluency/GUIDE.md
+      - 10 · Transactions and concurrency: modules/10-transactions-and-concurrency/GUIDE.md
   - Contributing: CONTRIBUTING.md
